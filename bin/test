@@ -1,0 +1,3 @@
+#!/bin/bash
+
+docker exec -it swoole-db-unit-test vendor/phpunit/phpunit/phpunit --testdox --coverage-filter src --coverage-text tests
