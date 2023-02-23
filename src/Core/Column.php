@@ -1,4 +1,9 @@
 <?php
+/*
+ *  This file is a part of small-env
+ *  Copyright 2023 - Sébastien Kus
+ *  Under GNU GPL V3 licence
+ */
 
 namespace Small\SwooleDb\Core;
 
@@ -14,11 +19,17 @@ class Column
         self::KEY_COL_NAME,
     ];
 
-    public function __construct(protected string $name, protected ColumnType $type, protected int $size)
+    public function __construct(protected string $name, protected ColumnType $type, protected int|null $size = null)
     {
+
         if (in_array($this->name, static::FORBIDDEN_NAMES)) {
             throw new MalformedTable('The column name \'' . $this->name . '\' is forbidden');
         }
+
+        if ($this->type != ColumnType::float && $this->size === null) {
+            throw new MalformedTable('Missing size param for ' . $this->type->name . ' type, creating ' . $name . ' column');
+        }
+
     }
 
     /**

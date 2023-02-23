@@ -1,4 +1,9 @@
 <?php
+/*
+ *  This file is a part of small-env
+ *  Copyright 2023 - Sébastien Kus
+ *  Under GNU GPL V3 licence
+ */
 
 namespace Small\SwooleDb\Registry;
 
@@ -25,7 +30,7 @@ final class TableRegistry
      * @return Table
      * @throws \Small\SwooleDb\Exception\SmallSwooleDbException
      */
-    public function loadFromChannel(string $tableName, string $channel): Table
+    public function load(string $tableName, string $channel = PersistenceRegistry::DEFAULT): Table
     {
 
         $this->tables[$tableName] = PersistenceRegistry::getInstance()->getChannel($channel)->load($tableName);
@@ -42,7 +47,7 @@ final class TableRegistry
      * @throws TableNotExists
      * @throws \Small\SwooleDb\Exception\SmallSwooleDbException
      */
-    public function persist(string $tableName, string $channel): self
+    public function persist(string $tableName, string $channel = PersistenceRegistry::DEFAULT): self
     {
 
         if (!array_key_exists($tableName, $this->tables)) {
