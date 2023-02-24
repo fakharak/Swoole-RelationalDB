@@ -10,7 +10,7 @@
   ],
   "require": {
     "php": ">=8.2",
-    "ext-openswoole": ">=22.0"
+    "ext-openswoole": ">=22.0.*"
   },
   "require-dev": {
     "phpunit/phpunit": ">=9.6.3"
