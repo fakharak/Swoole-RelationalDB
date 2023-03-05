@@ -73,7 +73,7 @@ final class TableRegistry
             throw new TableAlreadyExists('The table ' . $tableName . ' already exists');
         }
 
-        return $this->tables[$tableName] = new Table($rowSize);
+        return $this->tables[$tableName] = new Table($tableName, $rowSize);
 
     }
 
