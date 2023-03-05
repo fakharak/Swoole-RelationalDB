@@ -1,5 +1,9 @@
 FROM openswoole/swoole:22.0-php8.2
 
+ARG uid
+
+RUN usrmod -u 1000 www-data
+
 # install pcov
 RUN pecl install pcov && docker-php-ext-enable pcov
 

@@ -62,13 +62,6 @@ class Table extends \Swoole\Table
         return $this->columns;
     }
 
-    public function set(string $key, array $value): self
-    {
-        parent::set($key, $value);
-
-        return $this;
-    }
-
     public function getRecord(mixed $key): Record
     {
         return new Record($this->getName(), $key, $this->get($key));

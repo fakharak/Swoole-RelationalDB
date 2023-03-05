@@ -81,6 +81,13 @@ class Condition
         return $result;
     }
 
+    /**
+     * Validate condition with records
+     * @param array $leftRecord
+     * @param array|null $rightRecord
+     * @return bool
+     * @throws SyntaxErrorException
+     */
     public function validateCondition(array $leftRecord, array|null $rightRecord): bool
     {
 
