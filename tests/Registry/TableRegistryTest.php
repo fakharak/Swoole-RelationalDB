@@ -1,6 +1,6 @@
 <?php
 /*
- *  This file is a part of small-env
+ *  This file is a part of small-swoole-db
  *  Copyright 2023 - Sébastien Kus
  *  Under GNU GPL V3 licence
  */
@@ -67,7 +67,7 @@ class TableRegistryTest extends TestCase
         );
         $table->create();
 
-        TableRegistry::getInstance()->persist('testPersist', PersistenceRegistry::DEFAULT);
+        TableRegistry::getInstance()->persist('testPersist');
 
         /** @var AsJsonFile $asJsonFile */
         $asJsonFile = PersistenceRegistry::getInstance()->getChannel(PersistenceRegistry::DEFAULT);
@@ -82,20 +82,20 @@ class TableRegistryTest extends TestCase
 
         TableRegistry::getInstance()->destroy('testPersist');
 
-        TableRegistry::getInstance()->loadFromChannel('testPersist', PersistenceRegistry::DEFAULT);
+        TableRegistry::getInstance()->load('testPersist');
 
         self::assertInstanceOf(Table::class, TableRegistry::getInstance()
-            ->loadFromChannel('testPersist', PersistenceRegistry::DEFAULT)
+            ->load('testPersist')
         );
 
         try {
-            TableRegistry::getInstance()->persist('fake', PersistenceRegistry::DEFAULT);
+            TableRegistry::getInstance()->persist('fake');
         } catch (\Exception $e) {}
 
         self::assertInstanceOf(TableNotExists::class, $e);
 
         try {
-            TableRegistry::getInstance()->loadFromChannel('fake', PersistenceRegistry::DEFAULT);
+            TableRegistry::getInstance()->load('fake');
         } catch (\Exception $e) {}
 
         self::assertInstanceOf(FileNotFoundException::class, $e);

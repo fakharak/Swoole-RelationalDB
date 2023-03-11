@@ -1,4 +1,9 @@
 <?php
+/*
+ *  This file is a part of small-swoole-db
+ *  Copyright 2023 - Sébastien Kus
+ *  Under GNU GPL V3 licence
+ */
 
 namespace Small\SwooleDb\Selector\Bean;
 
@@ -37,15 +42,17 @@ class Bracket
      * @return $this
      * @throws SyntaxErrorException
      */
-    public function firstBracket(Bracket $bracket): self
+    public function firstBracket(): self
     {
+
         if (array_key_exists(0, $this->conditions)) {
             throw new SyntaxErrorException('Bracket as already hav a first condition');
         }
 
-        $this->conditions[] = $bracket;
+        $this->conditions[] = $bracket = new Bracket();
 
-        return $this;
+        return $bracket;
+
     }
 
     /**
@@ -55,10 +62,12 @@ class Bracket
      */
     public function andCondition(Condition $condition): self
     {
+
         $this->operators[] = BracketOperator::and;
         $this->conditions[] = $condition;
 
         return $this;
+
     }
 
     /**
@@ -66,12 +75,14 @@ class Bracket
      * @param Bracket $bracket
      * @return $this
      */
-    public function andBracket(Bracket $bracket)
+    public function andBracket(): self
     {
-        $this->operators[] = BracketOperator::and;
-        $this->conditions[] = $bracket;
 
-        return $this;
+        $this->operators[] = BracketOperator::and;
+        $this->conditions[] = $bracket = new Bracket();
+
+        return $bracket;
+
     }
 
     /**
@@ -81,10 +92,12 @@ class Bracket
      */
     public function orCondition(Condition $condition): self
     {
+
         $this->operators[] = BracketOperator::or;
         $this->conditions[] = $condition;
 
         return $this;
+
     }
 
     /**
@@ -92,12 +105,14 @@ class Bracket
      * @param Bracket $bracket
      * @return $this
      */
-    public function orBracket(Bracket $bracket): self
+    public function orBracket(): self
     {
-        $this->operators[] = BracketOperator::or;
-        $this->conditions[] = $bracket;
 
-        return $this;
+        $this->operators[] = BracketOperator::or;
+        $this->conditions[] = $bracket = new Bracket();
+
+        return $bracket;
+
     }
 
     /**
@@ -108,14 +123,12 @@ class Bracket
      */
     public function validateBracket(array $records): bool
     {
+
         /** @var bool[] $conditionResults */
         $conditionResults = [];
         foreach ($this->conditions as $condition) {
             if ($condition instanceof Condition) {
-                    $conditionResults[] = $condition->validateCondition(
-                        $records[$condition->getLeftElement()->getTable()],
-                        $records[$condition->getRightElement()->getTable()]
-                    );
+                    $conditionResults[] = $condition->validateCondition($records);
             } elseif ($condition instanceof Bracket) {
                 $conditionResults[] = $condition->validateBracket($records);
             } else {
@@ -124,6 +137,7 @@ class Bracket
         }
 
         return $this->chainOperations($conditionResults);
+
     }
 
     /**
@@ -133,16 +147,22 @@ class Bracket
      */
     private function chainOperations(array $conditionResults): bool
     {
-        foreach ($conditionResults as $key => $conditionResult) {
-            if (!$conditionResult && $this->operators[$key] == BracketOperator::and) {
+
+        $result = $conditionResults[0];
+        for ($i = 1; $i < count($conditionResults); $i++) {
+            if ((!$conditionResults[$i] || !$result) && $this->operators[$i - 1] == BracketOperator::and) {
                 return false;
-            }
-            if ($conditionResult && $this->operators[$key] == BracketOperator::or) {
+            } elseif ($this->operators[$i - 1] == BracketOperator::and) {
+                $result = true;
+            } elseif (($result || $conditionResults[$i]) && $this->operators[$i - 1] == BracketOperator::or) {
                 return true;
+            } elseif ($this->operators[$i - 1] == BracketOperator::or) {
+                $result = false;
             }
         }
 
-        return true;
+        return $result;
+
     }
 
 }

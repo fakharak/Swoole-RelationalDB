@@ -1,17 +1,33 @@
 <?php
+/*
+ *  This file is a part of small-swoole-db
+ *  Copyright 2023 - Sébastien Kus
+ *  Under GNU GPL V3 licence
+ */
 
 namespace Small\SwooleDb\Selector\Bean;
 
 use Small\SwooleDb\Selector\Enum\ConditionElementType;
+use Small\SwooleDb\Selector\Exception\SyntaxErrorException;
 
 class ConditionElement
 {
 
     public function __construct(
-        protected ConditionElementType $type,
-        protected string|null $table,
-        protected int|float|string $value,
-    ) {}
+        protected ConditionElementType $type = ConditionElementType::const,
+        protected int|float|string|array|null $value = null,
+        protected string|null $table = null,
+    ) {
+
+        if ($this->type == ConditionElementType::var && !is_string($this->table)) {
+            throw new SyntaxErrorException('Condition element of type var must have table in constructor');
+        }
+
+        if ($this->type == ConditionElementType::var && !is_string($this->value)) {
+            throw new SyntaxErrorException('Wrong format for ConditionElement value : var type must be field name');
+        }
+
+    }
 
     /**
      * @return ConditionElementType
@@ -72,7 +88,7 @@ class ConditionElement
      * @param array $record
      * @return float|int|string
      */
-    public function computeValue(array $record): float|int|string
+    public function computeValue(array $records): float|int|string|array|null
     {
 
         switch ($this->type)
@@ -82,7 +98,7 @@ class ConditionElement
                 return $this->value;
 
             case ConditionElementType::var:
-                return $record[$this->value];
+                return $records[$this->table][$this->value];
 
         }
 

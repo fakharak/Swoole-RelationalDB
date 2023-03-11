@@ -1,6 +1,6 @@
 <?php
 /*
- *  This file is a part of small-env
+ *  This file is a part of small-swoole-db
  *  Copyright 2023 - Sébastien Kus
  *  Under GNU GPL V3 licence
  */
@@ -19,14 +19,14 @@ class Column
         self::KEY_COL_NAME,
     ];
 
-    public function __construct(protected string $name, protected ColumnType $type, protected int|null $size = null)
+    public function __construct(protected string $name, protected ColumnType $type, protected int $size = 0)
     {
 
         if (in_array($this->name, static::FORBIDDEN_NAMES)) {
             throw new MalformedTable('The column name \'' . $this->name . '\' is forbidden');
         }
 
-        if ($this->type != ColumnType::float && $this->size === null) {
+        if ($this->type != ColumnType::float && $this->size === 0) {
             throw new MalformedTable('Missing size param for ' . $this->type->name . ' type, creating ' . $name . ' column');
         }
 
@@ -51,7 +51,7 @@ class Column
     /**
      * @return int
      */
-    public function getSize(): int
+    public function getSize(): int|null
     {
         return $this->size;
     }

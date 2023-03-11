@@ -1,8 +1,13 @@
 <?php
+/*
+ *  This file is a part of small-swoole-db
+ *  Copyright 2023 - Sébastien Kus
+ *  Under GNU GPL V3 licence
+ */
 
 namespace Small\SwooleDb\Selector;
 
-use Small\OrmSwoole\Storgae\TableRegistry;
+use Small\SwooleDb\Registry\TableRegistry;
 use Small\SwooleDb\Core\Record;
 use Small\SwooleDb\Selector\Bean\Bracket;
 
@@ -28,7 +33,7 @@ class TableSelector
      */
     public function execute(): array
     {
-        $fromTable = TableRegistry::getInstance()->get($this->from);
+        $fromTable = TableRegistry::getInstance()->getTable($this->from);
 
         $resultsets = [];
         foreach ($fromTable as $key => $record) {

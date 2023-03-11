@@ -6,7 +6,7 @@ services:
     build:
       context: .
       args:
-        - uid: 1000
+        - uid=1000
     environment:
       - BUILD=1 # If set to 0, the unit test are not launched and container will sleep to let you run all tests commands you want when you develop tests
     volumes:

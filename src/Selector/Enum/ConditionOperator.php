@@ -1,4 +1,9 @@
 <?php
+/*
+ *  This file is a part of small-swoole-db
+ *  Copyright 2023 - Sébastien Kus
+ *  Under GNU GPL V3 licence
+ */
 
 namespace Small\SwooleDb\Selector\Enum;
 
@@ -14,9 +19,11 @@ enum ConditionOperator: string
     case like = 'like';
     case notLike = 'not like';
     case regex = 'regex';
-    case is = 'is';
-    case isNot = 'is not';
+    case isNull = 'is null';
+    case isNotNull = 'is not null';
     case exists = 'exists';
     case notExists = 'not exists';
+    case in = 'in';
+    case notIn = 'not in';
 
 }

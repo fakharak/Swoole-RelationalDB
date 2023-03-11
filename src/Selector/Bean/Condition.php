@@ -1,17 +1,22 @@
 <?php
+/*
+ *  This file is a part of small-swoole-db
+ *  Copyright 2023 - Sébastien Kus
+ *  Under GNU GPL V3 licence
+ */
 
 namespace Small\SwooleDb\Selector\Bean;
 
 use Small\SwooleDb\Selector\Enum\ConditionOperator;
 use Small\SwooleDb\Selector\Exception\SyntaxErrorException;
 
-class Condition
+readonly class Condition
 {
 
     public function __construct(
         protected ConditionElement $leftElement,
         protected ConditionOperator $operator,
-        protected ConditionElement|null $rightElement,
+        protected ConditionElement|null $rightElement = null,
     ) {}
 
     /**
@@ -23,31 +28,11 @@ class Condition
     }
 
     /**
-     * @param ConditionElement $leftElement
-     * @return Condition
-     */
-    public function setLeftElement(ConditionElement $leftElement): Condition
-    {
-        $this->leftElement = $leftElement;
-        return $this;
-    }
-
-    /**
      * @return ConditionOperator
      */
     public function getOperator(): ConditionOperator
     {
         return $this->operator;
-    }
-
-    /**
-     * @param ConditionOperator $operator
-     * @return Condition
-     */
-    public function setOperator(ConditionOperator $operator): Condition
-    {
-        $this->operator = $operator;
-        return $this;
     }
 
     /**
@@ -59,67 +44,92 @@ class Condition
     }
 
     /**
-     * @param ConditionElement|null $rightElement
-     * @return Condition
-     */
-    public function setRightElement(?ConditionElement $rightElement): Condition
-    {
-        $this->rightElement = $rightElement;
-        return $this;
-    }
-
-    /**
      * Escape like sting to regex string
      * @param string $string
      * @return string
      */
     private function likeToRegex(string $string): string
     {
-        $result = str_replace('%', '.*', $this->rightElement->computeValue($string));
-        $result = str_replace('_', '.', $this->rightElement->computeValue($result));
+        $result = str_replace('%', '.*', $string);
+        $result = str_replace('_', '.', $result);
 
         return $result;
     }
 
     /**
      * Validate condition with records
-     * @param array $leftRecord
-     * @param array|null $rightRecord
+     * @param array $records
      * @return bool
      * @throws SyntaxErrorException
      */
-    public function validateCondition(array $leftRecord, array|null $rightRecord): bool
+    public function validateCondition(array $records): bool
     {
 
         switch ($this->operator) {
 
             case ConditionOperator::equal:
-                return $this->leftElement->computeValue($leftRecord) == $this->rightEledment->computeValue($rightRecord);
+                return $this->leftElement->computeValue($records) == $this->rightElement->computeValue($records);
+            case ConditionOperator::notEqual:
+                return $this->leftElement->computeValue($records) != $this->rightElement->computeValue($records);
             case ConditionOperator::inferior:
-                return $this->leftElement->computeValue($leftRecord) < $this->rightElement->computeValue($rightRecord);
+                return $this->leftElement->computeValue($records) < $this->rightElement->computeValue($records);
             case ConditionOperator::inferiorOrEqual:
-                return $this->leftElement->computeValue($leftRecord) <= $this->rightElement->computeValue($rightRecord);
+                return $this->leftElement->computeValue($records) <= $this->rightElement->computeValue($records);
             case ConditionOperator::superior:
-                return $this->leftElement->computeValue($leftRecord) > $this->rightElement->computeValue($rightRecord);
+                return $this->leftElement->computeValue($records) > $this->rightElement->computeValue($records);
             case ConditionOperator::superiorOrEqual:
-                return $this->leftElement->computeValue($leftRecord) >= $this->rightElement->computeValue($rightRecord);
+                return $this->leftElement->computeValue($records) >= $this->rightElement->computeValue($records);
             case ConditionOperator::like:
                 return preg_match(
-                    '/^' . $this->likeToRegex($this->rightElement->computeValue($rightRecord)) . '$/',
-                    $this->leftElement->computeValue($leftRecord)
+                    '/^' . $this->likeToRegex($this->rightElement->computeValue($records)) . '$/',
+                    $this->leftElement->computeValue($records)
                 );
-            case ConditionOperator::is:
-                if ($this->rightElement != null) {
+            case ConditionOperator::isNull:
+                if ($this->rightElement !== null) {
                     throw new SyntaxErrorException('Operator \'is\' allow only null as right operator');
                 }
-                return $this->leftElement->computeValue($leftRecord) === null;
-            case ConditionOperator::isNot:
-                if ($this->rightElement != null) {
+                return $this->leftElement->computeValue($records) === null;
+            case ConditionOperator::isNotNull:
+                if ($this->rightElement !== null) {
                     throw new SyntaxErrorException('Operator \'is not\' allow only null as right operator');
                 }
-                return $this->leftElement->computeValue($leftRecord) !== null;
+                return $this->leftElement->computeValue($records) !== null;
+            case ConditionOperator::regex:
+                if (!is_string($this->rightElement->computeValue($records))) {
+                    throw new SyntaxErrorException('Right operator must be regex string');
+                }
+                return preg_match(
+                    '/^' . $this->rightElement->computeValue($records) . '$/',
+                    $this->leftElement->computeValue($records)
+                );
+            case ConditionOperator::exists:
+                if ($this->rightElement !== null) {
+                    throw new SyntaxErrorException('Operator \'exists\' allow only null as right operator');
+                }
+                if ($this->leftElement->computeValue($records) == null) {
+                    return false;
+                }
+                return count($this->leftElement->computeValue($records)) > 0;
+            case ConditionOperator::notExists:
+                if ($this->rightElement !== null) {
+                    throw new SyntaxErrorException('Operator \'exists\' allow only null as right operator');
+                }
+                if ($this->leftElement->computeValue($records) == null) {
+                    return true;
+                }
+                return count($this->leftElement->computeValue($records)) == 0;
+            case ConditionOperator::in:
+                if (!is_array($this->rightElement->computeValue($records))) {
+                    throw new SyntaxErrorException('Operator \'in\' allow only array as right operator');
+                }
+                return in_array($this->leftElement->computeValue($records), $this->rightElement->computeValue($records));
+            case ConditionOperator::notIn:
+                if (!is_array($this->rightElement->computeValue($records))) {
+                    throw new SyntaxErrorException('Operator \'in\' allow only array as right operator');
+                }
+                return !in_array($this->leftElement->computeValue($records), $this->rightElement->computeValue($records));
             default:
-                throw new SyntaxErrorException('Operator ' . $this->operator->name . ' is not supported yet');
+                throw new \LogicException('Operator ' . $this->operator->name . ' is not supported yet');
 
         }
 

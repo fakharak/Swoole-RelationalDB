@@ -1,6 +1,6 @@
 <?php
 /*
- *  This file is a part of small-env
+ *  This file is a part of small-swoole-db
  *  Copyright 2023 - Sébastien Kus
  *  Under GNU GPL V3 licence
  */
@@ -55,16 +55,16 @@ class AsJsonFile implements PersistenceInterface
     /**
      * Load table from
      * @param string $name
-     * @return $this
+     * @return Table
+     * @throws FileNotFoundException
      * @throws WrongFormatException
-     * @throws \Small\SwooleDb\Core\Exception\MalformedTable
+     * @throws \Small\SwooleDb\Exception\MalformedTable
+     * @throws \Small\SwooleDb\Exception\NotFoundException
      */
     public function load(string $name): Table
     {
 
-        if ($this->checkFileExists($name)) {
-            throw new FileNotFoundException('File ' . $this->getFilename($name) . ' is not exists');
-        }
+        $this->checkFileExists($name);
 
         $array = json_decode(file_get_contents($this->getFilename($name)), true);
 
@@ -75,7 +75,7 @@ class AsJsonFile implements PersistenceInterface
         if (!array_key_exists('rowMaxSize', $array)) {
             throw new WrongFormatException('File ' . $this->getFilename($name) . ' does\'nt contains rows size definition');
         }
-        $table = new Table($array['rowMaxSize']);
+        $table = new Table($name, $array['rowMaxSize']);
 
         if (!array_key_exists('columns', $array)) {
             throw new WrongFormatException('File ' . $this->getFilename($name) . ' does\'nt contains columns definition');
@@ -139,7 +139,7 @@ class AsJsonFile implements PersistenceInterface
         $dirname = ParamRegistry::getInstance()->get(ParamType::varLibDir) . '/'
             . ParamRegistry::getInstance()->get(ParamType::dataDirName);
         if (!is_dir($dirname)) {
-            mkdir($dirname, 0755, true);
+            @mkdir($dirname, 0755, true);
         }
 
         if (!is_dir($dirname)) {
@@ -155,8 +155,9 @@ class AsJsonFile implements PersistenceInterface
      * @param string $name
      * @return void
      * @throws FileNotFoundException
+     * @throws \Small\SwooleDb\Exception\NotFoundException
      */
-    private function checkFileExists(string $name)
+    private function checkFileExists(string $name): void
     {
 
         if (!file_exists($this->getFilename($name))) {

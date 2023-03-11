@@ -1,6 +1,6 @@
 <?php
 /*
- *  This file is a part of small-env
+ *  This file is a part of small-swoole-db
  *  Copyright 2023 - Sébastien Kus
  *  Under GNU GPL V3 licence
  */
@@ -21,17 +21,19 @@ class AsJsonFileTest extends TestCase
     public function testExceptions()
     {
 
+        ParamRegistry::getInstance()->set(ParamType::varLibDir, '');
+        ParamRegistry::getInstance()->set(ParamType::dataDirName, 'tmp');
+
         $asJsonFile = new AsJsonFile();
         try {
-            $asJsonFile->load("fail");
+            @unlink('/tmp/fail.json');
+            $asJsonFile->load('fail');
         } catch (\Exception $e) {}
         self::assertInstanceOf(FileNotFoundException::class, $e);
 
         file_put_contents('/tmp/fail.json', 'not json');
-        ParamRegistry::getInstance()->set(ParamType::varLibDir, '');
-        ParamRegistry::getInstance()->set(ParamType::dataDirName, 'tmp');
         try {
-            $asJsonFile->load("fail");
+            $asJsonFile->load('fail');
         } catch (\Exception $e) {}
         self::assertInstanceOf(WrongFormatException::class, $e);
 
@@ -48,7 +50,7 @@ class AsJsonFileTest extends TestCase
             'rowMaxSize' => '128'
         ]));
         try {
-            $asJsonFile->load("fail");
+            $asJsonFile->load('fail');
         } catch (\Exception $e) {}
         self::assertInstanceOf(WrongFormatException::class, $e);
         self::assertEquals('File /tmp/fail.json does\'nt contains columns definition', $e->getMessage());
@@ -72,7 +74,7 @@ class AsJsonFileTest extends TestCase
             ]
         ]));
         try {
-            $asJsonFile->load("fail");
+            $asJsonFile->load('fail');
         } catch (\Exception $e) {}
         self::assertInstanceOf(WrongFormatException::class, $e);
         self::assertEquals('Column type of column #0 is missing', $e->getMessage());
@@ -84,7 +86,7 @@ class AsJsonFileTest extends TestCase
             ]
         ]));
         try {
-            $asJsonFile->load("fail");
+            $asJsonFile->load('fail');
         } catch (\Exception $e) {}
         self::assertInstanceOf(WrongFormatException::class, $e);
         self::assertEquals('Column size of column #0 is missing', $e->getMessage());
@@ -122,7 +124,7 @@ class AsJsonFileTest extends TestCase
         $dir = $asJsonFile->getDataDirname();
         self::assertEquals('/tmp/data', $dir);
 
-        ParamRegistry::getInstance()->set(ParamType::varLibDir, 'root');
+        ParamRegistry::getInstance()->set(ParamType::varLibDir, '/root');
         ParamRegistry::getInstance()->set(ParamType::dataDirName, 'data/toto');
         try {
             $asJsonFile->getDataDirname();

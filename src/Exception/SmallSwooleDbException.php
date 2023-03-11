@@ -1,6 +1,6 @@
 <?php
 /*
- *  This file is a part of small-env
+ *  This file is a part of small-swoole-db
  *  Copyright 2023 - Sébastien Kus
  *  Under GNU GPL V3 licence
  */
