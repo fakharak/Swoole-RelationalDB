@@ -15,12 +15,18 @@ class Column
 
     const KEY_COL_NAME = '_key';
 
+    const MAX_FIELD_NAME_SIZE = 256;
+
     const FORBIDDEN_NAMES = [
         self::KEY_COL_NAME,
     ];
 
     public function __construct(protected string $name, protected ColumnType $type, protected int $size = 0)
     {
+
+        if (strlen($this->name) > self::MAX_FIELD_NAME_SIZE) {
+            throw new MalformedTable('The column name \'' . $this->name . '\' exceed max chars lenght for field name (' . self::MAX_FIELD_NAME_SIZE . ' chars)');
+        }
 
         if (in_array($this->name, static::FORBIDDEN_NAMES)) {
             throw new MalformedTable('The column name \'' . $this->name . '\' is forbidden');
