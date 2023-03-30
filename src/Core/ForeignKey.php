@@ -105,10 +105,10 @@ class ForeignKey
      * @param $value
      * @return Record[]
      */
-    public function getForeignRecords(array $record): array
+    public function getForeignRecords(Record $record): array
     {
 
-        $value = $record[$this->fromField];
+        $value = $this->fromField == '_key' ? $record->getKey() : $record->getValue($this->fromField);
         $resultset = [];
         for ($i = 0; $i < self::INDEX_MAX_SIZE; $i++) {
             if ($this->index->exists($value . '_' . $i)) {
@@ -116,6 +116,8 @@ class ForeignKey
                 if ($foreignKey['valid'] == 1) {
                     $resultset[] = TableRegistry::getInstance()->getTable($this->toTable)->getRecord($foreignKey['foreignKey']);
                 }
+            } else {
+                break;
             }
         }
 

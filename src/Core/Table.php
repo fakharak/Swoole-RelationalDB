@@ -91,7 +91,7 @@ class Table extends \Swoole\Table
         foreach ($this as $fromKey => $fromRecord) {
             foreach ($toTable as $toKey => $toRecord) {
                 $fromValue = $fromField == '_key' ? $fromKey : $fromRecord[$fromField];
-                $toValue = $toField == '_key' ? $toKey : $fromRecord[$toField];
+                $toValue = $toField == '_key' ? $toKey : $toRecord[$toField];
                 if ($fromValue == $toValue) {
                     $foreignKey->addToIndex($fromValue, $toKey);
                 }
@@ -103,9 +103,9 @@ class Table extends \Swoole\Table
         foreach ($toTable as $toKey => $toRecord) {
             foreach ($this as $fromKey => $fromRecord) {
                 $fromValue = $fromField == '_key' ? $fromKey : $fromRecord[$fromField];
-                $toValue = $toField == '_key' ? $toKey : $fromRecord[$toField];
+                $toValue = $toField == '_key' ? $toKey : $toRecord[$toField];
                 if ($fromValue == $toValue) {
-                    $foreignKey->addToIndex($toValue, $toKey);
+                    $foreignKey->addToIndex($toValue, $fromKey);
                 }
             }
         }
@@ -117,14 +117,12 @@ class Table extends \Swoole\Table
 
     /**
      * @param string $foreignKeyName
-     * @param mixed $key
+     * @param mixed $from
      * @return Record[]
      */
-    public function getJoinedReords(string $foreignKeyName, mixed $key): array
+    public function getJoinedRecords(string $foreignKeyName, Record $from): array
     {
-
-        return $this->foreignKeys[$foreignKeyName]->getForeignRecords($this->get($key));
-
+        return $this->foreignKeys[$foreignKeyName]->getForeignRecords($from);
     }
 
 }

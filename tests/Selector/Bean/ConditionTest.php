@@ -8,6 +8,7 @@
 namespace Small\SwooleDb\Test\Selector\Bean;
 
 use PHPUnit\Framework\TestCase;
+use Small\SwooleDb\Core\Record;
 use Small\SwooleDb\Selector\Bean\Condition;
 use Small\SwooleDb\Selector\Bean\ConditionElement;
 use Small\SwooleDb\Selector\Enum\ConditionElementType;
@@ -52,8 +53,8 @@ class ConditionTest extends TestCase
             ConditionOperator::equal,
             new ConditionElement(ConditionElementType::var, 'field2', "test2"),
         ))->validateCondition([
-            'test' => ['field1' => 5],
-            'test2' => ['field2' => 5],
+            'test' => new Record('test', 0, ['field1' => 5]),
+            'test2' => new Record('test2', 0, ['field2' => 5]),
         ]));
 
     }
@@ -78,8 +79,8 @@ class ConditionTest extends TestCase
             ConditionOperator::notEqual,
             new ConditionElement(ConditionElementType::var, 'field2', "test2"),
         ))->validateCondition([
-            'test' => ['field1' => 5],
-            'test2' => ['field2' => 2],
+            'test' => new Record('test', 0, ['field1' => 5]),
+            'test2' => new Record('test2', 0, ['field2' => 2]),
         ]));
 
     }
@@ -110,8 +111,8 @@ class ConditionTest extends TestCase
             ConditionOperator::inferior,
             new ConditionElement(ConditionElementType::var, 'field2', 'test2'),
         ))->validateCondition([
-            'test' => ['field1' => 1],
-            'test2' => ['field2' => 2],
+            'test' => new Record('test', 0, ['field1' => 1]),
+            'test2' => new Record('test2', 0, ['field2' => 2]),
         ]));
 
     }
@@ -142,8 +143,8 @@ class ConditionTest extends TestCase
             ConditionOperator::inferiorOrEqual,
             new ConditionElement(ConditionElementType::var, 'field2', "test2"),
         ))->validateCondition([
-            'test' => ['field1' => 1],
-            'test2' => ['field2' => 2],
+            'test' => new Record('test', 0, ['field1' => 1]),
+            'test2' => new Record('test2', 0, ['field2' => 2]),
         ]));
 
     }
@@ -174,8 +175,8 @@ class ConditionTest extends TestCase
             ConditionOperator::superior,
             new ConditionElement(ConditionElementType::var, 'field2', "test2"),
         ))->validateCondition([
-            'test' => ['field1' => 2],
-            'test2' => ['field2' => 1],
+            'test' => new Record('test', 0, ['field1' => 2]),
+            'test2' => new Record('test2', 0, ['field2' => 1]),
         ]));
 
     }
@@ -206,8 +207,8 @@ class ConditionTest extends TestCase
             ConditionOperator::superiorOrEqual,
             new ConditionElement(ConditionElementType::var, 'field2', "test2"),
         ))->validateCondition([
-            'test' => ['field1' => 3],
-            'test2' => ['field2' => 2],
+            'test' => new Record('test', 0, ['field1' => 3]),
+            'test2' => new Record('test2', 0, ['field2' => 2]),
         ]));
 
     }
@@ -264,12 +265,16 @@ class ConditionTest extends TestCase
         self::assertTrue((new Condition(
             new ConditionElement(ConditionElementType::var, 'field', 'test'),
             ConditionOperator::isNull,
-        ))->validateCondition(['test' => ['field' => null]]));
+        ))->validateCondition([
+            'test' => new Record('test', 0, ['field' => null])
+        ]));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::var, 'field', 'test'),
             ConditionOperator::isNull,
-        ))->validateCondition(['test' => ['field' => 0]]));
+        ))->validateCondition([
+            'test' => new Record('test', 0, ['field' => 0]),
+        ]));
 
     }
 
@@ -292,13 +297,17 @@ class ConditionTest extends TestCase
             new ConditionElement(ConditionElementType::var, 'field', 'test'),
             ConditionOperator::regex,
             new ConditionElement(ConditionElementType::const,'%[a-z]*%')
-        ))->validateCondition(['test' => ['field' => '%bonjour%']]));
+        ))->validateCondition([
+            'test' => new Record('test', 0, ['field' => '%bonjour%']),
+        ]));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::var, 'field', 'test'),
             ConditionOperator::regex,
             new ConditionElement(ConditionElementType::const,  '%[a-z]*%')
-        ))->validateCondition(['test' => ['field' => '%bonjour']]));
+        ))->validateCondition([
+            'test' => new Record('test', 0, ['field' => '%bonjourA%']),
+        ]));
 
     }
 
@@ -323,17 +332,23 @@ class ConditionTest extends TestCase
         self::assertTrue((new Condition(
             new ConditionElement(ConditionElementType::var, 'field', 'table'),
             ConditionOperator::exists,
-        ))->validateCondition(['table' => ['field' => ['val']]]));
+        ))->validateCondition([
+            'table' => new Record('table', 0, ['field' => ['val']])
+        ]));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::var, 'field', 'table'),
             ConditionOperator::exists,
-        ))->validateCondition(['table' => ['field' => []]]));
+        ))->validateCondition([
+            'table' => new Record('table', 0, ['field' => []])
+        ]));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::var, 'field', 'table'),
             ConditionOperator::exists,
-        ))->validateCondition(['table' => ['field' => null]]));
+        ))->validateCondition([
+            'table' => new Record('table', 0, ['field' => null])
+        ]));
 
     }
 
@@ -358,17 +373,23 @@ class ConditionTest extends TestCase
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::var, 'field', 'table'),
             ConditionOperator::notExists,
-        ))->validateCondition(['table' => ['field' => ['val']]]));
+        ))->validateCondition([
+            'table' => new Record('table', 0, ['field' => ['val']])
+        ]));
 
         self::assertTrue((new Condition(
             new ConditionElement(ConditionElementType::var, 'field', 'table'),
             ConditionOperator::notExists,
-        ))->validateCondition(['table' => ['field' => []]]));
+        ))->validateCondition([
+            'table' => new Record('table', 0, ['field' => []])
+        ]));
 
         self::assertTrue((new Condition(
             new ConditionElement(ConditionElementType::var, 'field', 'table'),
             ConditionOperator::notExists,
-        ))->validateCondition(['table' => ['field' => null]]));
+        ))->validateCondition([
+            'table' => new Record('table', 0, ['field' => null])
+        ]));
 
     }
 
@@ -391,13 +412,17 @@ class ConditionTest extends TestCase
             new ConditionElement(ConditionElementType::var, 'field', 'test'),
             ConditionOperator::in,
             new ConditionElement(ConditionElementType::const, ['test', 'juice']),
-        ))->validateCondition(['test' => ['field' => 'test']]));
+        ))->validateCondition([
+            'test' => new Record('test', 0, ['field' => 'test'])
+        ]));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::var, 'field', 'test'),
             ConditionOperator::in,
             new ConditionElement(ConditionElementType::const, ['test', 'juice']),
-        ))->validateCondition(['test' => ['field' => 'testa']]));
+        ))->validateCondition([
+            'test' => new Record('test', 0, ['field' => 'testa'])
+        ]));
 
     }
 
@@ -420,13 +445,17 @@ class ConditionTest extends TestCase
             new ConditionElement(ConditionElementType::var, 'field', 'test'),
             ConditionOperator::notIn,
             new ConditionElement(ConditionElementType::const, ['test', 'juice']),
-        ))->validateCondition(['test' => ['field' => 'test']]));
+        ))->validateCondition([
+            'test' => new Record('test', 0, ['field' => 'test'])
+        ]));
 
         self::assertTrue((new Condition(
             new ConditionElement(ConditionElementType::var, 'field', 'test'),
             ConditionOperator::notIn,
             new ConditionElement(ConditionElementType::const, ['test', 'juice']),
-        ))->validateCondition(['test' => ['field' => 'testa']]));
+        ))->validateCondition([
+            'test' => new Record('test', 0, ['field' => 'testa'])
+        ]));
 
     }
 

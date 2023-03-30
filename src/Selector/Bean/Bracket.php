@@ -124,6 +124,10 @@ class Bracket
     public function validateBracket(array $records): bool
     {
 
+        if (count($this->conditions) == 0) {
+            return true;
+        }
+
         /** @var bool[] $conditionResults */
         $conditionResults = [];
         foreach ($this->conditions as $condition) {

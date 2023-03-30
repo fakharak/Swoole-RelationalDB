@@ -36,14 +36,18 @@ class ForeignKeyTest extends TestCase
 
         $projectTable->addForeignKey('projectOwner', 'user', 'ownerId');
 
-        $records = $projectTable->getJoinedReords('projectOwner', 0);
+        $record = $projectTable->getRecord(0);
+        $records = $projectTable->getJoinedRecords('projectOwner', $record);
         self::assertEquals('john', $records[0]->getValue('name'));
-        $records = $projectTable->getJoinedReords('projectOwner', 1);
+        $record = $projectTable->getRecord(1);
+        $records = $projectTable->getJoinedRecords('projectOwner', $record);
         self::assertEquals('john', $records[0]->getValue('name'));
-        $records = $projectTable->getJoinedReords('projectOwner', 2);
+        $record = $projectTable->getRecord(2);
+        $records = $projectTable->getJoinedRecords('projectOwner', $record);
         self::assertEquals('paul', $records[0]->getValue('name'));
 
-        $records = $userTable->getJoinedReords('projectOwner', 0);
+        $record = $userTable->getRecord(0);
+        $records = $userTable->getJoinedRecords('projectOwner', $record);
         self::assertEquals('zero', $records[0]->getValue('name'));
         self::assertEquals('star wars', $records[1]->getValue('name'));
 

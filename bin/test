@@ -1,3 +1,9 @@
 #!/bin/bash
 
+if [ "$1" == "--build" ]
+then
+  docker-compose up -d --build --remove-orphans
+  shift
+fi
+
 docker exec -it swoole-db-unit-test vendor/phpunit/phpunit/phpunit --testdox --coverage-filter src --coverage-text tests

@@ -7,6 +7,7 @@
 
 namespace Small\SwooleDb\Selector\Bean;
 
+use Small\SwooleDb\Core\Record;
 use Small\SwooleDb\Selector\Enum\ConditionElementType;
 use Small\SwooleDb\Selector\Exception\SyntaxErrorException;
 
@@ -85,7 +86,7 @@ class ConditionElement
 
     /**
      * Compute value for a record
-     * @param array $record
+     * @param Record[] $records
      * @return float|int|string
      */
     public function computeValue(array $records): float|int|string|array|null
@@ -98,7 +99,7 @@ class ConditionElement
                 return $this->value;
 
             case ConditionElementType::var:
-                return $records[$this->table][$this->value];
+                return $records[$this->table]->getValue($this->value);
 
         }
 

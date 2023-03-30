@@ -8,6 +8,7 @@
 namespace Small\SwooleDb\Test\Selector\Bean;
 
 use PHPUnit\Framework\TestCase;
+use Small\SwooleDb\Core\Record;
 use Small\SwooleDb\Selector\Bean\ConditionElement;
 use Small\SwooleDb\Selector\Enum\ConditionElementType;
 use Small\SwooleDb\Selector\Exception\SyntaxErrorException;
@@ -44,7 +45,7 @@ class ConditionElementTest extends TestCase
         self::assertEquals(2, $element->computeValue([]));
 
         $element = new ConditionElement(ConditionElementType::var, 'field', 'test');
-        self::assertEquals(5, $element->computeValue(['test' => ['field' => 5]]));
+        self::assertEquals(5, $element->computeValue(['test' => new Record('test', 0, ['field' => 5])]));
 
     }
 
