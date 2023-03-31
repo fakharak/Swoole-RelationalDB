@@ -1,6 +1,7 @@
 {
   "name": "small/swoole-db",
-  "licence": "GPL-3.0-only",
+  "licences": "GPL-3.0-only",
+  "description": "This package provide advanced features to manipulate openswoole tables",
   "type": "library",
   "authors": [
     {

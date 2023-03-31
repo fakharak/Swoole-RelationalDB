@@ -1,6 +1,6 @@
 # small-swoole-db
 
-small-swoole-db is a memory db based on OpenSwoole\Table.
+This package provide advanced features to manipulate OpenSwoole\Table.
 
 The heavy advantage of OpenSwoole\Table is heavy speed access : you can read about 2 million records in one second. 
 
