@@ -1,6 +1,6 @@
 # small-swoole-db
 
-small-swoole-db is a memory db based on OpenSwoole\Table.
+This package provide advanced features to manipulate OpenSwoole\Table.
 
 The heavy advantage of OpenSwoole\Table is heavy speed access : you can read about 2 million records in one second. 
 
@@ -70,6 +70,31 @@ $table->set(0, ['franck', 12.5, 11]);
 $table->set(1, ['joe', 55.2, 26]);
 ```
 
+#### Foreign key
+
+You can link two tables throw foreign key.
+
+```php
+use Small\SwooleDb\Registry\TableRegistry;
+
+$table = TableRegistry::getInstance()->createTable('testSelectJoin', 5);
+$table->addColumn(new Column('name', ColumnType::string, 255));
+$table->addColumn(new Column('price', ColumnType::float));
+$table->create();
+$table->set(0, ['name' => 'john', 'price' => 12.5]);
+$table->set(1, ['name' => 'paul', 'price' => 34.9]);
+
+$table2 = TableRegistry::getInstance()->createTable('testSelectJoinPost', 5);
+$table2->addColumn(new Column('message', ColumnType::string, 255));
+$table2->addColumn(new Column('ownerId', ColumnType::int, 16));
+$table2->create();
+$table2->set(0, ['message' => 'ceci est un test', 'ownerId' => 0]);
+$table2->set(1, ['message' => 'ceci est un autre test', 'ownerId' => 1]);
+$table2->set(2, ['message' => 'ceci est une suite de test', 'ownerId' => 1]);
+
+$table2->addForeignKey('messageOwner', 'testSelectJoin', 'ownerId');
+```
+
 See [OpenSwoole documentation for Table](https://openswoole.com/docs/modules/swoole-table)
 
 #### Destroy a table
@@ -128,6 +153,55 @@ ParamRegistry::getInstance()->set(ParamType::dataDirName, 'persistence');
 In this example, the testTable table will be stored in :
 ```
 /home/some-user/testTable.json
+```
+
+### Selector
+
+You can use selector to build complex requests.
+
+Basically, you can select all records :
+
+```php
+use Small\SwooleDb\Selector\TableSelector;
+
+$selector = new TableSelector('testSelect');
+$records = $selector->execute();
+
+foreach ($records as $record) {
+    echo $record['testSelect']->getValue('name');
+}
+```
+
+You can use *where* to add conditions :
+
+```php
+use Small\SwooleDb\Selector\TableSelector;
+
+$selector = new TableSelector('testSelect');
+$selector->where()
+    ->firstCondition(new Condition(
+        new ConditionElement(ConditionElementType::var, 'price', 'testSelect'),
+        ConditionOperator::superior,
+        new ConditionElement(ConditionElementType::const, 15)
+    ));
+$records = $selector->execute();
+
+foreach ($records as $record) {
+    echo $record['testSelect']->getValue('name');
+}
+```
+
+You can also join result throw foreign keys :
+```php
+use Small\SwooleDb\Selector\TableSelector;
+
+$result = (new TableSelector('user'))
+    ->join('post', 'messageOwner', 'message')
+    ->execute()
+
+foreach ($result as $record) {
+    echo $record['message']->getValue('body') . ' : by ' . $record['user']->getValue('name');
+}
 ```
 
 ## Testing
