@@ -79,7 +79,7 @@ class TableSelector
         }
 
         $result = [];
-        foreach ($flatten as $record) {
+        foreach ($flatten as $alias => $record) {
             if ($this->where->validateBracket($record)) {
                 $result[] = $record;
             }

@@ -7,6 +7,7 @@
 
 namespace Small\SwooleDb\Core;
 
+use Small\Collection\Collection;
 use Small\SwooleDb\Exception\DeleteFailException;
 use Small\SwooleDb\Exception\NotFoundException;
 use Small\SwooleDb\Registry\TableRegistry;
@@ -17,7 +18,7 @@ class Record
     public function __construct(
         protected string $tableName,
         protected mixed $key,
-        protected array $data,
+        protected array|Collection $data,
     ) {}
 
     /**
@@ -129,7 +130,7 @@ class Record
      */
     public function persist(): self
     {
-        $this->getTable()->set($this->key, $this->data);
+        $this->getTable()->set((string)$this->key, $this->data instanceof Collection ? $this->data->toArray() : $this->data);
 
         return $this;
     }
