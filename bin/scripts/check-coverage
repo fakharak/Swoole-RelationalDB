@@ -2,7 +2,7 @@
 <?php
 
 // Define constants
-$file = __DIR__ . '/../coverage/index.xml';
+$file = __DIR__ . '/../../coverage/index.xml';
 $threshold = 80.0;
 
 // Check coverage percent
@@ -15,7 +15,7 @@ echo "Threshold: $threshold%
 ";
 
 // Create coverage badge
-$im = imagecreatefrompng(__DIR__ . '/../img/badges/coverage-badge-template.png');
+$im = imagecreatefrompng(__DIR__ . '/../../img/badges/coverage-badge-template.png');
 if ($ratio > $threshold) {
     $color = imagecolorallocate($im, 21, 120, 17);
 } else {
@@ -33,7 +33,7 @@ if ($ratio < 100) {
     $fontSize = 32;
 }
 imagefttext($im, $fontSize, 0, $start_x, $start_y, $color, '/usr/share/fonts/truetype/arkpandora/AerialMono.ttf', $ratioString);
-imagepng($im, __DIR__ . '/../coverage-badge.png');
+imagepng($im, __DIR__ . '/../../coverage-badge.png');
 
 // Fail
 if ($ratio < $threshold) {

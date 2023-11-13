@@ -27,5 +27,7 @@
     "psr-4": {
       "Small\\SwooleDb\\Test\\": "tests"
     }
+  },"scripts": {
+    "test": "bash bin/scripts/test"
   }
 }

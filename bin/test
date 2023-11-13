@@ -6,16 +6,5 @@ then
   shift
 fi
 
-set -e
 
-cp img/badges/tests-badge-fail.png tests-badge.png
-cp img/badges/coverage-badge-template.png coverage-badge.png
-
-# test disabled since phpstan don't recognize Openswoole\Table class
-#vendor/bin/phpstan
-
-docker exec -it swoole-db-unit-test vendor/phpunit/phpunit/phpunit --testdox --configuration=phpunit.xml
-
-cp img/badges/tests-badge-ok.png tests-badge.png
-
-docker exec -it swoole-db-unit-test bin/check-coverage
+docker exec -it swoole-db-unit-test bin/scripts/test

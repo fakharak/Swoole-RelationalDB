@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -e
+
+# Copy tests badges as failed
+cp img/badges/tests-badge-fail.png tests-badge.png
+cp img/badges/coverage-badge-template.png coverage-badge.png
+
+# test disabled since phpstan don't recognize Openswoole\Table class
+#vendor/bin/phpstan
+
+# run unit tests
+vendor/phpunit/phpunit/phpunit --testdox --configuration=phpunit.xml
+
+# unit tests ok
+cp img/badges/tests-badge-ok.png tests-badge.png
+
+# create coverage badge
+bin/scripts/check-coverage
