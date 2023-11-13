@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!--
+  ~ This file is a part of small/small-swoole-orm-core
+  ~ Copyright 2023 - Sébastien Kus
+  ~ Under GNU GPL V3 licence
+  -->
+<phpunit
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.1/phpunit.xsd"
+        cacheDirectory=".phpunit.cache"
+>
+  <coverage>
+    <report>
+      <text outputFile="php://stdout"/>
+      <xml outputDirectory="coverage"/>
+    </report>
+  </coverage>
+  <testsuites>
+    <testsuite name="Unit Tests">
+      <directory suffix="Test.php">./tests</directory>
+    </testsuite>
+  </testsuites>
+  <logging/>
+  <source>
+    <include>
+      <directory suffix=".php">./src</directory>
+    </include>
+  </source>
+
+</phpunit>

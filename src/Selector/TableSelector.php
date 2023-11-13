@@ -67,8 +67,7 @@ class TableSelector
         $fromTable = TableRegistry::getInstance()->getTable($this->from);
 
         $flatten = [];
-        foreach ($fromTable as $key => $array) {
-            $record = new Record($fromTable->getName(), $key, $array);
+        foreach ($fromTable as $key => $record) {
             $curTree = new ResultTree($this->alias, $record, []);
             foreach ($this->joins as $joinKey => $join) {
                 list($from, $alias) = explode('/', $joinKey);

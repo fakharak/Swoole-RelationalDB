@@ -7,7 +7,7 @@
 
 namespace Small\SwooleDb\Core\Enum;
 
-use Small\SwooleDb\Core\Table;
+use Openswoole\Table;
 
 enum ColumnType: int
 {

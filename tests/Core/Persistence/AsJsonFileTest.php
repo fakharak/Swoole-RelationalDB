@@ -107,7 +107,7 @@ class AsJsonFileTest extends TestCase
         file_put_contents('/tmp/fail.json', json_encode([
             'rowMaxSize' => '128',
             'columns' => [
-                ['name' => 'fail', 'type' => Table::TYPE_STRING, 'size' => 12]
+                ['name' => 'fail', 'type' => \OpenSwoole\Table::TYPE_STRING, 'size' => 12]
             ],
             'data' => [
                 ['_key' => 0, 'fail' => 'string']

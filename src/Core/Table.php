@@ -10,11 +10,16 @@ namespace Small\SwooleDb\Core;
 use Small\SwooleDb\Core\Enum\ColumnType;
 use Small\SwooleDb\Core\Enum\ForeignKeyType;
 use Small\SwooleDb\Exception\FieldValueIsNull;
+use Small\SwooleDb\Exception\ForbiddenActionException;
 use Small\SwooleDb\Exception\NotFoundException;
 use Small\SwooleDb\Registry\TableRegistry;
 
-class Table extends \Swoole\Table
+class Table implements \Iterator
 {
+
+    protected \OpenSwoole\Table $openswooleTable;
+
+    protected mixed $current;
 
     /** @var Column[] */
     protected array $columns = [];
@@ -22,9 +27,23 @@ class Table extends \Swoole\Table
     /** @var ForeignKey[] */
     protected array $foreignKeys = [];
 
-    public function __construct(protected string $name, private int $maxSize, float $conflict_proportion = 0.2)
+    public function __construct(
+        protected string $name,
+        private int $maxSize,
+        float $conflict_proportion = 0.2
+    ) {
+
+        $this->openswooleTable = new \OpenSwoole\Table($this->maxSize, $conflict_proportion);
+
+    }
+
+    public function create(): self
     {
-        parent::__construct($this->maxSize, $conflict_proportion);
+
+        $this->openswooleTable->create();
+
+        return $this;
+
     }
 
     /**
@@ -32,7 +51,9 @@ class Table extends \Swoole\Table
      */
     public function getName(): string
     {
+
         return $this->name;
+
     }
 
     /**
@@ -41,9 +62,11 @@ class Table extends \Swoole\Table
      */
     public function setName(string $name): self
     {
+
         $this->name = $name;
 
         return $this;
+
     }
 
     /**
@@ -58,14 +81,14 @@ class Table extends \Swoole\Table
     public function addColumn(Column $column): self
     {
 
-        $this->column($column->getName(), $column->getType()->value, $column->getSize());
+        $this->openswooleTable->column($column->getName(), $column->getType()->value, $column->getSize());
         $this->columns[$column->getName()] = $column;
 
         if (in_array($column->getType(), [ColumnType::float, ColumnType::int])) {
-            $this->column($column->getName() . '::sign', ColumnType::int->value, 1);
+            $this->openswooleTable->column($column->getName() . '::sign', ColumnType::int->value, 1);
         }
 
-        $this->column($column->getName() . '::null', ColumnType::int->value, 1);
+        $this->openswooleTable->column($column->getName() . '::null', ColumnType::int->value, 1);
 
         return $this;
 
@@ -76,19 +99,21 @@ class Table extends \Swoole\Table
      */
     public function getColumns(): array
     {
+
         return $this->columns;
+
     }
 
     protected function formatValue(string $key, string $column, mixed $value): string|int|float|bool
     {
 
-        $isNull = parent::get($key, $column . '::null') == 1;
+        $isNull = $this->openswooleTable->get($key, $column . '::null') == 1;
         if ($isNull) {
             throw new FieldValueIsNull('Value for column ' . $column . ' is null');
         }
 
         if (in_array($this->getColumns()[$column]->getType(), [ColumnType::int, ColumnType::float])) {
-            if (parent::get($column . '::sign') == 1) {
+            if ($this->openswooleTable->get($column . '::sign') == 1) {
                 $value = -$value;
             }
         }
@@ -138,7 +163,7 @@ class Table extends \Swoole\Table
     public function get(string $key, string $column = ''): array|string|int|float|bool
     {
 
-        $rawResult = parent::get($key);
+        $rawResult = $this->openswooleTable->get($key);
 
         if ($column !== '') {
             return $this->formatValue($key, $column, $rawResult);
@@ -157,6 +182,7 @@ class Table extends \Swoole\Table
                     $result[$column] = null;
                 }
             }
+
         }
 
         return $result;
@@ -171,22 +197,49 @@ class Table extends \Swoole\Table
             $result[$field] = $item === null ? $this->getColumns()[$field]->getNullValue() : $item;
         }
 
-        return parent::set($key, $this->setMetasValues($value));
+        return $this->openswooleTable->set($key, $this->setMetasValues($value));
 
     }
 
     /**
      * Get a record
-     * @param mixed $key
+     * @param string $key
      * @return Record
+     * @throws NotFoundException
      */
-    public function getRecord(mixed $key): Record
+    public function getRecord(string $key): Record
     {
+
+        if (!$this->exists($key)) {
+            throw new NotFoundException('Record not found');
+        }
 
         return new Record($this->getName(), $key, $this->get($key));
 
     }
 
+    /**
+     * Check if key exists
+     * @param string $key
+     * @return bool
+     */
+    public function exists(string $key): bool
+    {
+
+        return $this->openswooleTable->exists($key);
+
+    }
+
+    /**
+     * Add a foreign key
+     * @param string $name
+     * @param string $toTableName
+     * @param string $fromField
+     * @param string $toField
+     * @return $this
+     * @throws NotFoundException
+     * @throws \Small\SwooleDb\Exception\TableNotExists
+     */
     public function addForeignKey(string $name, string $toTableName, string $fromField, string $toField = '_key'): self
     {
 
@@ -200,29 +253,38 @@ class Table extends \Swoole\Table
             throw new NotFoundException('Field \'' . $toField . '\' not exists in table \'' . $toTable->getName() . '\' on foreign key creation');
         }
 
-        $foreignKey = new ForeignKey($name, $this->name, $fromField, $toTableName, $toField, ForeignKeyType::from);
-        foreach ($this as $fromKey => $fromRecord) {
-            foreach ($toTable as $toKey => $toRecord) {
-                $fromValue = $fromField == '_key' ? $fromKey : $fromRecord[$fromField];
-                $toValue = $toField == '_key' ? $toKey : $toRecord[$toField];
-                if ($fromValue == $toValue) {
-                    $foreignKey->addToIndex($fromValue, $toKey);
+        $linkFn = function (
+            ForeignKey $foreignKey,
+            self $fromTable,
+            self $toTable,
+            string $fromField,
+            string $toField,
+        ) {
+
+            foreach ($fromTable as $fromKey => $fromRecord) {
+
+                foreach ($toTable as $toKey => $toRecord) {
+
+                    $fromValue = $fromField == '_key' ? $fromKey : $fromRecord->getValue($fromField);
+                    $toValue = $toField == '_key' ? $toKey : $toRecord->getValue($toField);
+
+                    if ($fromValue == $toValue) {
+                        $foreignKey->addToIndex($fromValue, $toKey);
+                    }
+
                 }
+
             }
-        }
-        $this->foreignKeys[$name] = $foreignKey;
+
+            return $foreignKey;
+
+        };
+
+        $foreignKey = new ForeignKey($name, $this->name, $fromField, $toTableName, $toField, ForeignKeyType::from);
+        $this->foreignKeys[$name] = $linkFn($foreignKey, $this, $toTable, $fromField, $toField);
 
         $foreignKey = new ForeignKey($name, $toTableName, $toField, $this->name, $fromField, ForeignKeyType::to);
-        foreach ($toTable as $toKey => $toRecord) {
-            foreach ($this as $fromKey => $fromRecord) {
-                $fromValue = $fromField == '_key' ? $fromKey : $fromRecord[$fromField];
-                $toValue = $toField == '_key' ? $toKey : $toRecord[$toField];
-                if ($fromValue == $toValue) {
-                    $foreignKey->addToIndex($toValue, $fromKey);
-                }
-            }
-        }
-        $toTable->foreignKeys[$name] = $foreignKey;
+        $toTable->foreignKeys[$name] = $linkFn($foreignKey, $toTable, $this, $toField, $fromField);
 
         return $this;
 
@@ -235,7 +297,64 @@ class Table extends \Swoole\Table
      */
     public function getJoinedRecords(string $foreignKeyName, Record $from): array
     {
+
         return $this->foreignKeys[$foreignKeyName]->getForeignRecords($from);
+
+    }
+
+    public function current(): Record
+    {
+
+        $data = $this->openswooleTable->current();
+
+        return new Record($this->name, $this->openswooleTable->key(), $data);
+
+    }
+
+    public function next(): void
+    {
+
+        $this->openswooleTable->next();
+
+    }
+
+    public function key(): ?string
+    {
+
+        return $this->openswooleTable->key();
+
+    }
+
+    public function valid(): bool
+    {
+
+        return $this->openswooleTable->valid();
+
+    }
+
+    public function rewind(): void
+    {
+
+        $this->openswooleTable->rewind();
+
+    }
+
+    public function del(string $key): bool
+    {
+
+        return $this->openswooleTable->del($key);
+
+    }
+
+    public function destroy(): bool
+    {
+
+        if (debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)[1]['class'] != TableRegistry::class) {
+            throw new ForbiddenActionException('You must use registry to destroy a table');
+        }
+
+        return $this->openswooleTable->destroy();
+
     }
 
 }

@@ -1,0 +1,46 @@
+#!/usr/local/bin/php
+<?php
+
+// Define constants
+$file = __DIR__ . '/../coverage/index.xml';
+$threshold = 80.0;
+
+// Check coverage percent
+$coverage = simplexml_load_file($file);
+$ratio = (double) $coverage->project->directory->totals->lines["percent"];
+
+echo "Line coverage: $ratio%
+";
+echo "Threshold: $threshold%
+";
+
+// Create coverage badge
+$im = imagecreatefrompng(__DIR__ . '/../img/badges/coverage-badge-template.png');
+if ($ratio > $threshold) {
+    $color = imagecolorallocate($im, 21, 120, 17);
+} else {
+    $color = imagecolorallocate($im, 255, 0, 0);
+}
+if ($ratio < 100) {
+    $ratioString = number_format($ratio, 2) . '%';
+    $start_x = 25;
+    $start_y = 93;
+    $fontSize = 24;
+} else {
+    $ratioString = '100%';
+    $start_x = 30;
+    $start_y = 100;
+    $fontSize = 32;
+}
+imagefttext($im, $fontSize, 0, $start_x, $start_y, $color, '/usr/share/fonts/truetype/arkpandora/AerialMono.ttf', $ratioString);
+imagepng($im, __DIR__ . '/../coverage-badge.png');
+
+// Fail
+if ($ratio < $threshold) {
+    echo "FAILED!
+";
+    exit(1);
+}
+
+echo "SUCCESS!
+";

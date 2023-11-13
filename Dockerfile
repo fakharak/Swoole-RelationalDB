@@ -1,11 +1,18 @@
-FROM openswoole/swoole:22.0-php8.2
+FROM php:8.2-cli
 
 ARG uid
+
+RUN pecl install openswoole && docker-php-ext-enable openswoole
 
 RUN usermod -u 1000 www-data
 
 # install pcov
 RUN pecl install pcov && docker-php-ext-enable pcov
+
+# install gd
+RUN apt-get update && apt-get install -y zlib1g-dev libpng-dev libzip-dev libfreetype-dev fonts-arkpandora
+RUN docker-php-ext-configure gd --with-freetype
+RUN docker-php-ext-install gd
 
 # install composer
 RUN apt-get update && \

@@ -19,6 +19,6 @@ interface PersistenceInterface
      */
     public function load(string $name): Table;
 
-    public function persist(string $name, Table $table);
+    public function persist(string $name, Table $table): self;
 
 }
