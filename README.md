@@ -1,6 +1,6 @@
 <img src="img/logo/small-swoole-db-large.svg" width="500"><br>
 
-<img src="coverage-badge.png" width="300px"><img src="tests-badge.png" width="300px" style="margin-left:50px">
+<img src="coverage-badge.png" width="300px">&nbsp;&nbsp;&nbsp;&nbsp;<img src="tests-badge.png" width="300px">
 
 This package provide advanced features to manipulate OpenSwoole\Table.
 
