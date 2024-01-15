@@ -14,8 +14,9 @@ class ResultTree
 {
 
     /**
-     * @param Record[] $record
-     * @param ResultTree[] $children
+     * @param string $alias
+     * @param Record $record
+     * @param array $children
      */
     public function __construct(
         protected string $alias,

@@ -10,8 +10,9 @@
     }
   ],
   "require": {
-    "php": ">=8.1",
-    "ext-openswoole": "22.1.*"
+    "php": ">=8.3",
+    "ext-openswoole": "22.1.*",
+    "small/collection": "2.0.*"
   },
   "require-dev": {
     "phpunit/phpunit": "10.4.*",
@@ -28,6 +29,6 @@
       "Small\\SwooleDb\\Test\\": "tests"
     }
   },"scripts": {
-    "test": "bash bin/scripts/test"
+    "unit-tests": "bash bin/composer-scripts/test"
   }
 }

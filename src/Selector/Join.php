@@ -19,7 +19,7 @@ class Join
     public function __construct(
         readonly protected string $fromTableName,
         readonly protected string $foreignKeyName,
-        readonly protected string|null $alias = null,
+        readonly protected string $alias,
     ) {
 
         $this->from = TableRegistry::getInstance()->getTable($this->fromTableName);

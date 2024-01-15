@@ -1,4 +1,4 @@
-FROM php:8.2-cli
+FROM php:8.3-cli
 
 ARG uid
 
@@ -14,6 +14,9 @@ RUN apt-get update && apt-get install -y zlib1g-dev libpng-dev libzip-dev libfre
 RUN docker-php-ext-configure gd --with-freetype
 RUN docker-php-ext-install gd
 
+# install bcmath for msall-collection
+RUN docker-php-ext-install bcmath
+
 # install composer
 RUN apt-get update && \
     apt-get install -y git zip
@@ -27,6 +30,7 @@ RUN apt-get update && apt-get install -y procps
 # system setup
 RUN mkdir /usr/lib/small-swoole-db
 WORKDIR /usr/lib/small-swoole-db
+RUN chown www-data:www-data /var/www
 
 USER www-data
 

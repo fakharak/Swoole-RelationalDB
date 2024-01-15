@@ -35,6 +35,10 @@ class TableSelector
     public function join(string $from, string $foreignKeyName, string $alias = null): self
     {
 
+        if ($alias === null) {
+            $alias = $from;
+        }
+
         if (array_key_exists($alias, $this->joins)) {
             throw new SyntaxErrorException('The join alias \'' . $alias . '\' already exists');
         }
@@ -68,6 +72,11 @@ class TableSelector
 
         $flatten = [];
         foreach ($fromTable as $key => $record) {
+
+            if ($this->alias === null) {
+                throw new \LogicException('Alias can\'t be null at this point');
+            }
+
             $curTree = new ResultTree($this->alias, $record, []);
             foreach ($this->joins as $joinKey => $join) {
                 list($from, $alias) = explode('/', $joinKey);
