@@ -21,13 +21,12 @@ final class PersistenceRegistry
 
     const DEFAULT = 'DEFAULT';
 
+    /** @var PersistenceInterface[] */
     private array $persistenceChannels = [
     ];
 
     private function __construct() {
-        $this->persistenceChannels[self::DEFAULT] = new AsJsonFile(
-            ParamRegistry::getInstance()->get(ParamType::varLibDir) . '/' .
-            ParamRegistry::getInstance()->get(ParamType::dataDirName));
+        $this->persistenceChannels[self::DEFAULT] = new AsJsonFile();
     }
 
     /**

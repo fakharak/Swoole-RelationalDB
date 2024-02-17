@@ -1,3 +1,8 @@
 #!/bin/bash
 
-docker exec -it swoole-db-unit-test composer $1 $2 $3 $4 $5 $6 $7 $8 $9
+if [ "$(docker ps | grep small-swoole-db)" == "" ]
+then
+  docker-compose up -d --build
+fi
+
+docker exec -it small-swoole-db composer $1 $2 $3 $4 $5 $6 $7 $8 $9

@@ -1,10 +1,11 @@
 FROM php:8.3-cli
 
 ARG uid
+ARG project
 
-RUN pecl install openswoole && docker-php-ext-enable openswoole
+RUN pecl install $project && docker-php-ext-enable $project
 
-RUN usermod -u 1000 www-data
+RUN usermod -u $uid www-data
 
 # install pcov
 RUN pecl install pcov && docker-php-ext-enable pcov
@@ -29,6 +30,7 @@ RUN apt-get update && apt-get install -y procps
 
 # system setup
 RUN mkdir /usr/lib/small-swoole-db
+COPY . /usr/lib/small-swoole-db
 WORKDIR /usr/lib/small-swoole-db
 RUN chown www-data:www-data /var/www
 

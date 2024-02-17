@@ -66,19 +66,29 @@ class AsJsonFile implements PersistenceInterface
 
         $this->checkFileExists($name);
 
-        $array = json_decode(file_get_contents($this->getFilename($name)), true);
+        if (($content = file_get_contents($this->getFilename($name))) === false) {
+            throw new \LogicException('Can\'t read tests');
+        }
+
+        $array = json_decode($content, true);
+
+        if (!is_array($array)) {
+            throw new WrongFormatException('File ' . $this->getFilename($name) . ' is not a json object');
+        }
 
         if (empty($array)) {
             throw new WrongFormatException('File ' . $this->getFilename($name) . ' is not a json file');
         }
 
         if (!array_key_exists('rowMaxSize', $array)) {
-            throw new WrongFormatException('File ' . $this->getFilename($name) . ' does\'nt contains rows size definition');
+            throw new WrongFormatException('File ' . $this->getFilename($name) .
+                ' does\'nt contains rows size definition');
         }
         $table = new Table($name, $array['rowMaxSize']);
 
         if (!array_key_exists('columns', $array)) {
-            throw new WrongFormatException('File ' . $this->getFilename($name) . ' does\'nt contains columns definition');
+            throw new WrongFormatException('File ' . $this->getFilename($name) .
+                ' does\'nt contains columns definition');
         }
         foreach ($array['columns'] as $key => $columnSpecifications) {
             if (!array_key_exists('name', $columnSpecifications)) {
@@ -169,16 +179,16 @@ class AsJsonFile implements PersistenceInterface
     /**
      * Export table data to array
      * @param Table $table
-     * @return array
+     * @return mixed[][]
      */
-    private function exportDataToArray(Table $table)
+    private function exportDataToArray(Table $table): array
     {
 
         $data = [];
         $table->rewind();
         while ($table->valid()) {
             $value = [];
-            foreach ($table->current() as $key => $item) {
+            foreach ($table->current()->getData() as $key => $item) {
                 if (in_array($key, Column::FORBIDDEN_NAMES)) {
                     throw new \LogicException('Column name ' . $key . ' is forbidden');
                 }

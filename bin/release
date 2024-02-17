@@ -9,7 +9,8 @@ docker-compose build --no-cache
 docker-compose up -d
 
 # Launch tests
-bin/composer test
+docker exec -it small-swoole-db unit-tests
+docker exec -it small-swoole-db-swoole unit-tests
 
 # Publish only on master branch
 if [ "$(git status | grep "On branch" | cut -c11-16)" != "main" ]

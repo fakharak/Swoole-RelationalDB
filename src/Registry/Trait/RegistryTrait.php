@@ -16,7 +16,7 @@ trait RegistryTrait
 
     public static function getInstance(): self
     {
-        if (self::$instance == null) {
+        if (static::$instance == null) {
             static::$instance = new self();
         }
 

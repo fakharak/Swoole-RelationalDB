@@ -1,12 +1,24 @@
 version: "3.7"
 
 services:
-  unit-test-orm-swoole:
-    container_name: swoole-db-unit-test
+  small-swoole-db:
+    container_name: small-swoole-db
     build:
       context: .
       args:
         - uid=1000
+        - project=openswoole
+    environment:
+      - BUILD=1 # If set to 0, the unit test are not launched and container will sleep to let you run all tests commands you want when you develop tests
+    volumes:
+      - .:/usr/lib/small-swoole-db
+  small-swoole-db-swoole:
+    container_name: small-swoole-db-swoole
+    build:
+      context: .
+      args:
+        - uid=1000
+        - project=swoole
     environment:
       - BUILD=1 # If set to 0, the unit test are not launched and container will sleep to let you run all tests commands you want when you develop tests
     volumes:

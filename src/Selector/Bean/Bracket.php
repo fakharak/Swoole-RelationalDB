@@ -7,6 +7,7 @@
 
 namespace Small\SwooleDb\Selector\Bean;
 
+use Small\SwooleDb\Core\Record;
 use Small\SwooleDb\Selector\Bean\Condition;
 use Small\SwooleDb\Selector\Enum\BracketOperator;
 use Small\SwooleDb\Selector\Exception\SyntaxErrorException;
@@ -38,8 +39,7 @@ class Bracket
 
     /**
      * Add bracket to bracket as first condition
-     * @param Bracket $bracket
-     * @return $this
+     * @return self
      * @throws SyntaxErrorException
      */
     public function firstBracket(): self
@@ -72,8 +72,7 @@ class Bracket
 
     /**
      * Add and bracket
-     * @param Bracket $bracket
-     * @return $this
+     * @return Bracket
      */
     public function andBracket(): self
     {
@@ -102,8 +101,7 @@ class Bracket
 
     /**
      * Add or bracket
-     * @param Bracket $bracket
-     * @return $this
+     * @return Bracket
      */
     public function orBracket(): self
     {
@@ -117,7 +115,7 @@ class Bracket
 
     /**
      * Validate conditions in bracket
-     * @param array $records
+     * @param Record[] $records
      * @return bool
      * @throws SyntaxErrorException
      */
@@ -146,7 +144,7 @@ class Bracket
 
     /**
      * Compute condition result
-     * @param array $conditionResults
+     * @param bool[] $conditionResults
      * @return bool
      */
     private function chainOperations(array $conditionResults): bool
@@ -158,6 +156,7 @@ class Bracket
                 return false;
             } elseif ($this->operators[$i - 1] == BracketOperator::and) {
                 $result = true;
+            /** @phpstan-ignore-next-line */
             } elseif (($result || $conditionResults[$i]) && $this->operators[$i - 1] == BracketOperator::or) {
                 return true;
             } elseif ($this->operators[$i - 1] == BracketOperator::or) {

@@ -5,11 +5,14 @@
  *  Under GNU GPL V3 licence
  */
 
-namespace Small\SwooleDb\Core;
+namespace Small\SwooleDb\Core\Index;
 
+use Small\SwooleDb\Core\Column;
 use Small\SwooleDb\Core\Enum\ColumnType;
 use Small\SwooleDb\Core\Enum\ForeignKeyType;
-use Small\SwooleDb\Exception\FileNotFoundException;
+use Small\SwooleDb\Core\Record;
+use Small\SwooleDb\Core\Table;
+use Small\SwooleDb\Exception\NotFoundException;
 use Small\SwooleDb\Exception\TableNotExists;
 use Small\SwooleDb\Registry\TableRegistry;
 
@@ -22,7 +25,7 @@ class ForeignKey
 
     const INDEX_MAX_SIZE = 1048576;
 
-    protected Table $index;
+    protected Table $foreignIndex;
 
     public function __construct(
         protected string $keyName,
@@ -43,36 +46,30 @@ class ForeignKey
         }
 
         try {
-            $this->index = TableRegistry::getInstance()->getTable($prefix . $this->keyName);
+            $this->foreignIndex = TableRegistry::getInstance()->getTable($prefix . $this->keyName);
         } catch (TableNotExists) {
-            $this->index = TableRegistry::getInstance()->createTable($prefix . $this->keyName, self::INDEX_MAX_SIZE);
-            self::createIndexTable(TableRegistry::getInstance()->getTable($this->toTable), $this->toField);
+            $this->foreignIndex = TableRegistry::getInstance()->createTable($prefix . $this->keyName, self::INDEX_MAX_SIZE);
+            $this->createForeignIndexTable();
         }
     }
 
     /**
      * Create an index table
-     * @param Table $table
-     * @param string $indexField
-     * @return void
-     * @throws FileNotFoundException
-     * @throws TableNotExists
+     * @return self
      * @throws \Small\SwooleDb\Exception\MalformedTable
      */
-    private function createIndexTable(Table $table, string $indexField): void
+    private function createForeignIndexTable(): self
     {
 
         $type = ColumnType::string;
         $size = 256;
 
-        if (!isset($type)) {
-            throw new FileNotFoundException('The field \'' . $indexField . '\' does\'nt exists at foreign key creation');
-        }
+        $this->foreignIndex->addColumn(new Column('foreignKey', $type, $size));
+        $this->foreignIndex->addColumn(new Column('valid', ColumnType::int, 1));
 
-        $this->index->addColumn(new Column('foreignKey', $type, $size));
-        $this->index->addColumn(new Column('valid', ColumnType::int, 1));
+        $this->foreignIndex->create();
 
-        $this->index->create();
+        return $this;
 
     }
 
@@ -82,19 +79,19 @@ class ForeignKey
      * @param mixed $foreignKey
      * @return self
      */
-    public function addToIndex(mixed $value, mixed $foreignKey): self
+    public function addToForeignIndex(mixed $value, mixed $foreignKey): self
     {
 
         for ($i = 0; $i < self::INDEX_MAX_SIZE; $i++) {
-            if (!$this->index->exists($value . '_' . $i)) {
+            if (!$this->foreignIndex->exists($value . '_' . $i)) {
                 break;
             }
-            if ($this->index->get($value . '_' . $i)['foreignKey'] == $foreignKey) {
+            if ($this->foreignIndex->get($value . '_' . $i, 'foreignKey') == $foreignKey) {
                 return $this;
             }
         }
 
-        $this->index->set($value . '_' . $i, ['foreignKey' => $foreignKey, 'valid' => 1]);
+        $this->foreignIndex->set($value . '_' . $i, ['foreignKey' => $foreignKey, 'valid' => 1]);
 
         return $this;
 
@@ -111,10 +108,17 @@ class ForeignKey
         $value = $this->fromField == '_key' ? $record->getKey() : $record->getValue($this->fromField);
         $resultset = [];
         for ($i = 0; $i < self::INDEX_MAX_SIZE; $i++) {
-            if ($this->index->exists($value . '_' . $i)) {
-                $foreignKey = $this->index->get($value . '_' . $i);
-                if ($foreignKey['valid'] == 1) {
-                    $resultset[] = TableRegistry::getInstance()->getTable($this->toTable)->getRecord($foreignKey['foreignKey']);
+            if ($this->foreignIndex->exists($value . '_' . $i)) {
+                $foreignKey = $this->foreignIndex->getRecord($value . '_' . $i);
+                if ($foreignKey->getValue('valid') == 1) {
+                    $resultset[] = TableRegistry::getInstance()
+                        ->getTable($this->toTable)
+                        ->getRecord(
+                            is_string($foreignKey->getValue('foreignKey'))
+                            ? $foreignKey->getValue('foreignKey')
+                            : throw new \LogicException('Foreign key must be string')
+                        )
+                    ;
                 }
             } else {
                 break;
@@ -127,18 +131,22 @@ class ForeignKey
 
     /**
      * Delete key from index
-     * @param $value
-     * @return void
+     * @param string|int $value
+     * @return $this
+     * @throws \Small\SwooleDb\Exception\NotFoundException
      */
-    public function deleteFromIndex($value): void
+    public function deleteFromForeignIndex(string|int $value): self
     {
 
         for ($i = 0; $i < self::INDEX_MAX_SIZE; $i++) {
-            if ($record = $this->index->get($value . '_' . $i)) {
-                $record['valid'] = 0;
-                $this->index->set($value . '_' . $i, $record);
-            }
+            try {
+                $record = $this->foreignIndex->getRecord($value . '_' . $i);
+                $record->setValue('valid', 0);
+                $record->persist();
+            } catch(NotFoundException) {}
         }
+
+        return $this;
 
     }
 

@@ -8,8 +8,10 @@
 namespace Small\SwooleDb\Test\Core;
 
 use PHPUnit\Framework\TestCase;
+use Small\SwooleDb\Core\Bean\IndexFilter;
 use Small\SwooleDb\Core\Column;
 use Small\SwooleDb\Core\Enum\ColumnType;
+use Small\SwooleDb\Core\Enum\Operator;
 use Small\SwooleDb\Core\Table;
 
 class TableTest extends TestCase
@@ -34,6 +36,37 @@ class TableTest extends TestCase
 
         $table->setName('changed');
         self::assertEquals('changed', $table->getName());
+
+    }
+
+    public function testFilterByIndex()
+    {
+
+        $table = new Table('testTableIndex', 10000);
+        $table->addColumn(
+            new Column('name', ColumnType::string, 256)
+        );
+        $table->addColumn(
+            new Column('price', ColumnType::float)
+        );
+        $table->create();
+        $table->addIndex(['name']);
+        $table->addIndex(['price']);
+
+        $name = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        foreach (range(1, 10000) as $value) {
+            $table->set($value, ['name' => $name[rand(1, strlen($name)) - 1], 'price' => rand(1, 1000000) / 100]);
+        }
+
+        for ($i = 0; $i < strlen($name); $i++) {
+            var_dump($name[$i]);
+            var_dump(
+                $table->filterWithIndex([
+                    new IndexFilter(Operator::equal, 'name', $name[$i])
+                ])->count()
+            );
+        }
+        exit;
 
     }
 

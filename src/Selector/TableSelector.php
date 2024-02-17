@@ -7,8 +7,9 @@
 
 namespace Small\SwooleDb\Selector;
 
+use Small\SwooleDb\Core\RecordCollection;
+use Small\SwooleDb\Core\Resultset;
 use Small\SwooleDb\Registry\TableRegistry;
-use Small\SwooleDb\Core\Record;
 use Small\SwooleDb\Selector\Bean\Bracket;
 use Small\SwooleDb\Selector\Bean\ResultTree;
 use Small\SwooleDb\Selector\Exception\SyntaxErrorException;
@@ -62,16 +63,16 @@ class TableSelector
 
     /**
      * Execute query
-     * @return Record[][]
+     * @return Resultset
      * @throws \Small\SwooleDb\Exception\TableNotExists
      */
-    public function execute(): array
+    public function execute(): Resultset
     {
 
         $fromTable = TableRegistry::getInstance()->getTable($this->from);
 
         $flatten = [];
-        foreach ($fromTable as $key => $record) {
+        foreach ($fromTable as $record) {
 
             if ($this->alias === null) {
                 throw new \LogicException('Alias can\'t be null at this point');
@@ -83,17 +84,22 @@ class TableSelector
                 $curTree->addChild($from, $alias, $join);
             }
 
+            /** @phpstan-ignore-next-line */
             $flatten = array_merge($flatten, $curTree->flatten());
         }
 
-        $result = [];
+        $result = new Resultset();
         foreach ($flatten as $alias => $record) {
             if ($this->where->validateBracket($record)) {
-                $result[] = $record;
+                if (is_array($record)) {
+                    $result[] = new RecordCollection($record);
+                } else {
+                    $result[] = new RecordCollection([$record]);
+                }
             }
         }
 
-        return $result;
+        return new $result;
 
     }
 

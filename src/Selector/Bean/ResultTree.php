@@ -16,7 +16,7 @@ class ResultTree
     /**
      * @param string $alias
      * @param Record $record
-     * @param array $children
+     * @param ResultTree[] $children
      */
     public function __construct(
         protected string $alias,
@@ -57,7 +57,11 @@ class ResultTree
 
     }
 
-    public function flatten(array $parent = []): array
+    /**
+     * @param Record[] $parent
+     * @return Record[][]|Record[]|Record
+     */
+    public function flatten(array $parent = []): array|Record
     {
         
         $record = array_merge($parent, [$this->alias => $this->record]);
@@ -70,6 +74,7 @@ class ResultTree
             $result[] = $child->flatten($record);
         }
 
+        /** @phpstan-ignore-next-line */
         return $result;
     }
 

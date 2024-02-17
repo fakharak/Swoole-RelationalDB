@@ -7,19 +7,35 @@
 
 namespace Small\SwooleDb\Core;
 
-use Small\Collection\Collection;
+use Small\Collection\Collection\Collection;
 use Small\SwooleDb\Exception\DeleteFailException;
 use Small\SwooleDb\Exception\NotFoundException;
 use Small\SwooleDb\Registry\TableRegistry;
 
-class Record
+class Record implements \ArrayAccess
 {
 
+    protected Collection $data;
+
+    /**
+     * @param string $tableName
+     * @param string $key
+     * @param mixed[]|Collection $data
+     * @phpstan-ignore-next-line
+     */
     public function __construct(
         protected string $tableName,
-        protected mixed $key,
-        protected array|Collection $data,
-    ) {}
+        protected string $key,
+        array|Collection $data,
+    ) {
+
+        if (is_array($data)) {
+            $this->data = new Collection($data);
+        } else {
+            $this->data = $data;
+        }
+
+    }
 
     /**
      * @return string
@@ -56,16 +72,17 @@ class Record
     /**
      * Get value of a field
      * @param string $fieldName
-     * @return mixed
+     * @return mixed[]|float|int|string|null
      * @throws NotFoundException
      */
-    public function getValue(string $fieldName): mixed
+    public function getValue(string $fieldName): Collection|array|float|int|string|null
     {
 
-        if (!array_key_exists($fieldName, $this->data)) {
+        if (!$this->data->offsetExists($fieldName)) {
             throw new NotFoundException('Field ' . $fieldName . ' not exists in record data');
         }
 
+        /** @phpstan-ignore-next-line */
         return $this->data[$fieldName];
 
     }
@@ -80,7 +97,7 @@ class Record
     public function setValue(string $fieldName, mixed $value): self
     {
 
-        if (!array_key_exists($fieldName, $this->data)) {
+        if (!$this->data->offsetExists($fieldName)) {
             throw new NotFoundException('Field ' . $fieldName . ' not exists in record data');
         }
 
@@ -92,20 +109,26 @@ class Record
 
     /**
      * Get fields as array
-     * @return array
+     * @return Collection
      */
-    public function getData(): array
+    public function getData(): Collection
     {
         return $this->data;
     }
 
     /**
      * Set data to array
-     * @param array $data
+     * @param mixed[]|Collection $data
      * @return $this
+     * @phpstan-ignore-next-line
      */
-    public function setData(array $data): self
+    public function setData(array|Collection $data): self
     {
+
+        if (is_array($data)) {
+            $data = new Collection($data);
+        }
+
         $this->data = $data;
 
         return $this;
@@ -113,15 +136,17 @@ class Record
 
     /**
      * Duplicate record with new key
-     * @param mixed $newKey
+     * @param string $newKey
      * @return Record
      */
-    public function duplicate(mixed $newKey): Record
+    public function duplicate(string $newKey): Record
     {
+
         $newRecord = clone $this;
         $newRecord->key = $newKey;
 
         return $newRecord;
+
     }
 
     /**
@@ -130,7 +155,7 @@ class Record
      */
     public function persist(): self
     {
-        $this->getTable()->set((string)$this->key, $this->data instanceof Collection ? $this->data->toArray() : $this->data);
+        $this->getTable()->set($this->key, $this->data->toArray());
 
         return $this;
     }
@@ -148,5 +173,30 @@ class Record
 
         return $this;
     }
+
+    /**
+     * @param int|string $offset
+     * @return bool
+     */
+    #[\Override] public function offsetExists(mixed $offset): bool
+    {
+        return $this->data->offsetExists($offset);
+    }
+
+    #[\Override] public function offsetGet(mixed $offset): mixed
+    {
+        return $this->data->offsetGet($offset);
+    }
+
+    #[\Override] public function offsetSet(mixed $offset, mixed $value): void
+    {
+        $this->data->offsetSet($offset, $value);
+    }
+
+    #[\Override] public function offsetUnset(mixed $offset): void
+    {
+        $this->data->offsetUnset($offset);
+    }
+
 
 }

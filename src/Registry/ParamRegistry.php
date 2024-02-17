@@ -50,11 +50,11 @@ final class ParamRegistry
     /**
      * Set parameter value
      * @param ParamType $param
-     * @param mixed $value
+     * @param string $value
      * @return $this
      * @throws NotFoundException
      */
-    public function set(ParamType $param, mixed $value): self
+    public function set(ParamType $param, string $value): self
     {
         $this->params[$param->name] = $value;
 

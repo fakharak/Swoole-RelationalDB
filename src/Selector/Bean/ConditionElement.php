@@ -7,13 +7,21 @@
 
 namespace Small\SwooleDb\Selector\Bean;
 
+use Small\Collection\Collection\Collection;
 use Small\SwooleDb\Core\Record;
+use Small\SwooleDb\Exception\WrongFormatException;
 use Small\SwooleDb\Selector\Enum\ConditionElementType;
 use Small\SwooleDb\Selector\Exception\SyntaxErrorException;
 
 class ConditionElement
 {
 
+    /**
+     * @param ConditionElementType $type
+     * @param int|float|string|mixed[]|null $value
+     * @param string|null $table
+     * @throws SyntaxErrorException
+     */
     public function __construct(
         protected ConditionElementType $type = ConditionElementType::const,
         protected int|float|string|array|null $value = null,
@@ -67,9 +75,9 @@ class ConditionElement
     }
 
     /**
-     * @return float|int|string
+     * @return mixed[]|float|int|string|null
      */
-    public function getValue(): float|int|string
+    public function getValue(): array|float|int|string|null
     {
         return $this->value;
     }
@@ -87,9 +95,9 @@ class ConditionElement
     /**
      * Compute value for a record
      * @param Record[] $records
-     * @return float|int|string
+     * @return mixed[]|float|int|string|null
      */
-    public function computeValue(array $records): float|int|string|array|null
+    public function computeValue(array $records): Collection|array|float|int|string|null
     {
 
         switch ($this->type)
@@ -99,10 +107,14 @@ class ConditionElement
                 return $this->value;
 
             case ConditionElementType::var:
+                if (!is_string($this->value)) {
+                    throw new WrongFormatException('Condition var must be identified by a string');
+                }
                 return $records[$this->table]->getValue($this->value);
 
         }
 
+        /** @phpstan-ignore-next-line */
         throw new \LogicException('Wrong condition element type');
 
     }

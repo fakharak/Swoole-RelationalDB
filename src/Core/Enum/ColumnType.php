@@ -9,6 +9,10 @@ namespace Small\SwooleDb\Core\Enum;
 
 use Openswoole\Table;
 
+if (!\class_exists('\OpenSwoole\Table')) {
+    \class_alias('\Swoole\Table', '\OpenSwoole\Table');
+}
+
 enum ColumnType: int
 {
 

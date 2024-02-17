@@ -3,11 +3,14 @@
 set -e
 
 # Copy tests badges as failed
-cp img/badges/tests-badge-fail.png tests-badge.png
-cp img/badges/coverage-badge-template.png coverage-badge.png
+cp img/badges/tests-badge-fail.png tests/img/tests-badge.png
+cp img/badges/coverage-badge-template.png tests/img/coverage-badge.png
 
 # test disabled since phpstan don't recognize Openswoole\Table class
-vendor/bin/phpstan
+if [ "$(php -i | grep openswoole)" != "" ]
+then
+  vendor/bin/phpstan
+fi
 
 # run unit tests
 vendor/phpunit/phpunit/phpunit --testdox --configuration=phpunit.xml
