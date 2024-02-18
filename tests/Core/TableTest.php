@@ -58,15 +58,15 @@ class TableTest extends TestCase
             $table->set($value, ['name' => $name[rand(1, strlen($name)) - 1], 'price' => rand(1, 1000000) / 100]);
         }
 
+        $total = 0;
         for ($i = 0; $i < strlen($name); $i++) {
-            var_dump($name[$i]);
-            var_dump(
-                $table->filterWithIndex([
+
+            $total += $table->filterWithIndex([
                     new IndexFilter(Operator::equal, 'name', $name[$i])
-                ])->count()
-            );
+                ])->count();
         }
-        exit;
+
+        self::assertEquals(10000, $total);
 
     }
 

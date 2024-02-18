@@ -99,7 +99,7 @@ class TableSelector
             }
         }
 
-        return new $result;
+        return $result;
 
     }
 

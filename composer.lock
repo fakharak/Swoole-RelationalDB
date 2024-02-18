@@ -4,15 +4,15 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f8d751f519ec8fd59ed7a4d778ea481d",
+    "content-hash": "b8b936fb0b84ac15d1a403e2f3f99fe9",
     "packages": [
         {
             "name": "small/collection",
-            "version": "2.0.1",
+            "version": "2.1.0",
             "source": {
                 "type": "git",
                 "url": "https://git.small-project.dev/lib/small-collection",
-                "reference": "c7c455e29fde039f49b89c2167dd945d38e7cd3d"
+                "reference": "2a3e67a8882b22209522bf0037357fc3adff9bbb"
             },
             "require": {
                 "ext-bcmath": "*",
@@ -20,7 +20,8 @@
             },
             "require-dev": {
                 "phpstan/phpstan": "^1.10",
-                "phpunit/phpunit": "10.0.*"
+                "phpunit/phpunit": "10.0.*",
+                "rector/rector": "0.19.*"
             },
             "type": "library",
             "autoload": {
@@ -38,8 +39,12 @@
                     "email": "seb@small-project.dev"
                 }
             ],
-            "description": "Provide collection classes, with a selector to make complex queries on collections",
-            "time": "2024-01-12T10:22:24+00:00"
+            "description": "Provide PHP collection classes, with a selector to make complex queries on collections.",
+            "keywords": [
+                "collection",
+                "selector"
+            ],
+            "time": "2024-02-17T20:12:35+00:00"
         }
     ],
     "packages-dev": [

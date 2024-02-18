@@ -3,6 +3,7 @@
 namespace Small\SwooleDb\Core\Index;
 
 use Small\SwooleDb\Core\Enum\Operator;
+use Small\SwooleDb\Exception\IndexException;
 
 class IndexNode implements \JsonSerializable
 {
@@ -80,28 +81,61 @@ class IndexNode implements \JsonSerializable
     public function searchEqual(mixed $value): array
     {
 
-        if ($value == $this->data?->getValue()) {
+        if (!is_array($value) && $value == $this->data?->getValue()) {
+
             return $this->data?->getKeys() ?? [];
-        } else if ($this->data?->inferior($value)) {
-            if (!array_key_exists(0, $this->childs)) {
-                return [];
-            } else {
-                return $this->childs[0]->searchEqual($value);
+
+        } else if (is_array($value)) {
+
+            $found = true;
+            if (!is_array($this->data?->getValue())) {
+                throw new IndexException('Index values are not array');
             }
-        } else {
+
+            foreach ($value as $key => $item) {
+
+                if (!array_key_exists($key, $this->data->getValue())) {
+                    $found = false;
+                }
+
+                if ($item != $this->data->getValue()[$key]) {
+                    $found = false;
+                }
+
+            }
+
+            if ($found) {
+                return $this->data->getKeys();
+            }
+
+        }
+
+        if ($this->data?->inferior($value)) {
+
             if (!array_key_exists(1, $this->childs)) {
                 return [];
             } else {
                 return $this->childs[1]->searchEqual($value);
             }
+
+        } else {
+
+            if (!array_key_exists(0, $this->childs)) {
+                return [];
+            } else {
+                return $this->childs[0]->searchEqual($value);
+            }
+
         }
 
     }
 
     /**
+     * Get keys for operation
      * @param Operator $operator
      * @param mixed $value
-     * @return string[]
+     * @return array|string[]
+     * @throws IndexException
      */
     public function getKeys(Operator $operator, mixed $value): array
     {
@@ -111,8 +145,7 @@ class IndexNode implements \JsonSerializable
         switch ($operator) {
 
             case Operator::equal:
-                $method = 'equal';
-                break;
+                return $this->searchEqual($value);
 
             case Operator::inferior:
                 $method = 'inferior';
@@ -150,9 +183,10 @@ class IndexNode implements \JsonSerializable
 
         } else {
 
-            if (isset($sens) && array_key_exists($sens, $this->childs)) {
+            if (array_key_exists($sens, $this->childs)) {
                 $result = array_merge($result, $this->childs[$sens]->getKeys($operator, $value));
             }
+
 
         }
 
