@@ -42,7 +42,7 @@ class TableTest extends TestCase
     public function testFilterByIndex()
     {
 
-        $table = new Table('testTableIndex', 10000);
+        $table = new Table('testTableIndex', 100000);
         $table->addColumn(
             new Column('name', ColumnType::string, 256)
         );

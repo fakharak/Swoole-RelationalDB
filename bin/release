@@ -5,12 +5,12 @@
 set -e
 
 # Build test containers
-docker-compose build --no-cache
+docker-compose build
 docker-compose up -d
 
 # Launch tests
-docker exec -it small-swoole-db unit-tests
-docker exec -it small-swoole-db-swoole unit-tests
+docker exec -it small-swoole-db composer unit-tests
+docker exec -it small-swoole-db-swoole composer unit-tests
 
 # Publish only on master branch
 if [ "$(git status | grep "On branch" | cut -c11-16)" != "main" ]
