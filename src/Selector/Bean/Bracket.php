@@ -7,9 +7,13 @@
 
 namespace Small\SwooleDb\Selector\Bean;
 
+use Small\SwooleDb\Core\Bean\IndexFilter;
+use Small\SwooleDb\Core\Enum\Operator;
 use Small\SwooleDb\Core\Record;
-use Small\SwooleDb\Selector\Bean\Condition;
+use Small\SwooleDb\Registry\TableRegistry;
 use Small\SwooleDb\Selector\Enum\BracketOperator;
+use Small\SwooleDb\Selector\Enum\ConditionElementType;
+use Small\SwooleDb\Selector\Enum\ConditionOperator;
 use Small\SwooleDb\Selector\Exception\SyntaxErrorException;
 
 class Bracket
@@ -19,6 +23,120 @@ class Bracket
     protected array $conditions = [];
     /** @var BracketOperator[] */
     protected array $operators = [];
+
+    /**
+     * @return IndexFilter[][]
+     */
+    public function getOptimisations(): array
+    {
+
+        $indexFilters = [];
+
+        $broken = false;
+        $keyToFilter = [];
+        foreach ($this->operators as $key => $operator) {
+
+            if ($operator == BracketOperator::and) {
+
+                if ($this->conditions[$key] instanceof Condition) {
+                    $keyToFilter[] = $key;
+                }
+
+            } else {
+                $broken = true;
+                break;
+            }
+
+        }
+
+        if (!$broken) {
+            if (isset($key) && $this->conditions[$key + 1] instanceof Condition) {
+                $keyToFilter[] = $key + 1;
+            }
+        }
+
+        $createFilter = function (string $table, int $key, string $field, mixed $value): IndexFilter|null {
+
+            if (!$this->conditions[$key] instanceof Condition) {
+                throw new \LogicException('$key don\'t point on ' . Condition::class);
+            }
+
+            $operator = match ($this->conditions[$key]->getOperator()) {
+                ConditionOperator::equal => Operator::equal,
+                ConditionOperator::inferior => Operator::inferior,
+                ConditionOperator::inferiorOrEqual => Operator::inferiorOrEqual,
+                ConditionOperator::superior => Operator::superior,
+                ConditionOperator::superiorOrEqual => Operator::superiorOrEqual,
+                default => null,
+            };
+
+            if ($operator === null) {
+                return null;
+            }
+
+            if (!TableRegistry::getInstance()->getTable($table)->hasIndex($field)) {
+                return null;
+            }
+
+            $filter = new IndexFilter(
+                $operator,
+                $field,
+                $value,
+            );
+
+            return $filter;
+
+        };
+
+        foreach ($keyToFilter as $key) {
+
+            if ($this->conditions[$key] instanceof Condition) {
+
+                if ($this->conditions[$key]->getLeftElement()->getType() == ConditionElementType::var) {
+                    if ($this->conditions[$key]->getRightElement()?->getType() == ConditionElementType::const) {
+
+                        $table = $this->conditions[$key]->getLeftElement()->getTable() ?? '';
+                        $field = $this->conditions[$key]->getLeftElement()->getValue();
+                        $value = $this->conditions[$key]->getRightElement()?->getValue();
+
+                        if (!is_string($field)) {
+                            throw new SyntaxErrorException('Field must be string');
+                        }
+
+                        $filter = $createFilter($table, $key, $field, $value);
+                        if ($filter !== null) {
+                            $indexFilters[$table][] = $filter;
+                        }
+
+                    }
+                }
+
+                if ($this->conditions[$key]->getRightElement()?->getType() == ConditionElementType::var) {
+                    if ($this->conditions[$key]->getLeftElement()->getType() == ConditionElementType::const) {
+
+                        $table = $this->conditions[$key]->getRightElement()?->getTable() ?? '';
+                        $field = $this->conditions[$key]->getRightElement()?->getValue();
+                        $value = $this->conditions[$key]->getLeftElement()->getValue();
+
+                        if (!is_string($field)) {
+                            throw new SyntaxErrorException('Field must be string');
+                        }
+
+                        $filter = $createFilter($table, $key, $field, $value);
+                        if ($filter !== null) {
+                            $indexFilters[$table][] = $filter;
+                        }
+
+                    }
+                }
+
+            }
+
+        }
+
+        return $indexFilters;
+
+    }
 
     /**
      * Add condition to bracket as first condition

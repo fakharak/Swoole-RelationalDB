@@ -7,6 +7,7 @@
 
 namespace Small\SwooleDb\Selector;
 
+use Small\SwooleDb\Core\Bean\IndexFilter;
 use Small\SwooleDb\Core\RecordCollection;
 use Small\SwooleDb\Core\Resultset;
 use Small\SwooleDb\Registry\TableRegistry;
@@ -30,6 +31,16 @@ class TableSelector
             $this->alias = $this->from;
         }
         $this->where = new Bracket();
+
+    }
+
+    /**
+     * @return IndexFilter[][]
+     */
+    protected function getOptimisation(): array
+    {
+
+        return $this->where->getOptimisations();
 
     }
 
@@ -71,8 +82,14 @@ class TableSelector
 
         $fromTable = TableRegistry::getInstance()->getTable($this->from);
 
+        if ($fromFilters = $this->getOptimisation()[$fromTable->getName()]) {
+            $records = $fromTable->filterWithIndex($fromFilters);
+        } else {
+            $records = $fromTable;
+        }
+
         $flatten = [];
-        foreach ($fromTable as $record) {
+        foreach ($records as $record) {
 
             if ($this->alias === null) {
                 throw new \LogicException('Alias can\'t be null at this point');

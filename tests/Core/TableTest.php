@@ -64,6 +64,7 @@ class TableTest extends TestCase
             $total += $table->filterWithIndex([
                     new IndexFilter(Operator::equal, 'name', $name[$i])
                 ])->count();
+
         }
 
         self::assertEquals(10000, $total);

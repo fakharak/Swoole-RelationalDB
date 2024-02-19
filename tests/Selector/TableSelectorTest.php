@@ -12,12 +12,14 @@ use SebastianBergmann\CodeCoverage\Driver\Selector;
 use Small\SwooleDb\Core\Column;
 use Small\SwooleDb\Core\Enum\ColumnType;
 use Small\SwooleDb\Core\Record;
+use Small\SwooleDb\Core\Table;
 use Small\SwooleDb\Registry\TableRegistry;
 use Small\SwooleDb\Selector\Bean\Condition;
 use Small\SwooleDb\Selector\Bean\ConditionElement;
 use Small\SwooleDb\Selector\Enum\ConditionElementType;
 use Small\SwooleDb\Selector\Enum\ConditionOperator;
 use Small\SwooleDb\Selector\TableSelector;
+use function _PHPStan_156ee64ba\React\Promise\Timer\timeout;
 
 class TableSelectorTest extends TestCase
 {
@@ -141,6 +143,48 @@ class TableSelectorTest extends TestCase
             default:
                 throw new \Exception('Unknown row');
         }
+
+    }
+
+    public function testSelectOnIndex()
+    {
+
+        $table = TableRegistry::getInstance()->createTable('testTableIndexSelector', 20000);
+        $table->addColumn(
+            new Column('name', ColumnType::string, 256)
+        );
+        $table->addColumn(
+            new Column('price', ColumnType::float)
+        );
+        $table->create();
+        $table->addIndex(['name']);
+        $table->addIndex(['price']);
+
+        foreach (range(1, 1000) as $value) {
+            $table->set($value, ['name' => 'john', 'price' => $value]);
+            $table->set($value + 10000, ['name' => 'doe', 'price' => $value]);
+        }
+
+        ($query = new TableSelector('testTableIndexSelector'))
+            ->where()
+            ->firstCondition(
+                new Condition(
+                    new ConditionElement(ConditionElementType::var, 'name', 'testTableIndexSelector'),
+                    ConditionOperator::equal,
+                    new ConditionElement(ConditionElementType::const, 'doe')
+                )
+            )->andCondition(
+                new Condition(
+                    new ConditionElement(ConditionElementType::var, 'price', 'testTableIndexSelector'),
+                    ConditionOperator::inferiorOrEqual,
+                    new ConditionElement(ConditionElementType::const, 100)
+                )
+            )
+        ;
+        echo "/";
+        $resultset = $query->execute();
+
+        self::assertEquals(100, $resultset->count());
 
     }
 

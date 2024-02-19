@@ -50,6 +50,13 @@ class Table implements \Iterator
 
     }
 
+    public function hasIndex(string $field): bool
+    {
+
+        return array_key_exists($field, $this->indexes);
+
+    }
+
     public function create(): self
     {
 
