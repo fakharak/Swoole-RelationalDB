@@ -11,6 +11,8 @@ use Small\SwooleDb\Core\Column;
 use Small\SwooleDb\Core\Enum\ColumnType;
 use Small\SwooleDb\Core\Enum\ForeignKeyType;
 use Small\SwooleDb\Core\Record;
+use Small\SwooleDb\Core\RecordCollection;
+use Small\SwooleDb\Core\Resultset;
 use Small\SwooleDb\Core\Table;
 use Small\SwooleDb\Exception\NotFoundException;
 use Small\SwooleDb\Exception\TableNotExists;
@@ -53,6 +55,13 @@ class ForeignKey
         }
     }
 
+    public function getToTableName(): string
+    {
+
+        return $this->toTable;
+
+    }
+
     /**
      * Create an index table
      * @return self
@@ -77,7 +86,8 @@ class ForeignKey
      * Add to "from" index
      * @param mixed $value
      * @param mixed $foreignKey
-     * @return self
+     * @return $this
+     * @throws \Small\SwooleDb\Exception\FieldValueIsNull
      */
     public function addToForeignIndex(mixed $value, mixed $foreignKey): self
     {
@@ -99,26 +109,31 @@ class ForeignKey
 
     /**
      * Get foreign record
-     * @param $value
-     * @return Record[]
+     * @param Record $record
+     * @param string|null $alias
+     * @return Resultset
+     * @throws NotFoundException
+     * @throws TableNotExists
      */
-    public function getForeignRecords(Record $record): array
+    public function getForeignRecords(Record $record, string $alias = null): Resultset
     {
 
         $value = $this->fromField == '_key' ? $record->getKey() : $record->getValue($this->fromField);
-        $resultset = [];
+        $resultset = new Resultset();
         for ($i = 0; $i < self::INDEX_MAX_SIZE; $i++) {
             if ($this->foreignIndex->exists($value . '_' . $i)) {
                 $foreignKey = $this->foreignIndex->getRecord($value . '_' . $i);
                 if ($foreignKey->getValue('valid') == 1) {
-                    $resultset[] = TableRegistry::getInstance()
+                    $resultset[] = new RecordCollection([
+                        $alias ?? $this->toTable =>
+                        TableRegistry::getInstance()
                         ->getTable($this->toTable)
                         ->getRecord(
                             is_string($foreignKey->getValue('foreignKey'))
                             ? $foreignKey->getValue('foreignKey')
                             : throw new \LogicException('Foreign key must be string')
                         )
-                    ;
+                    ]);
                 }
             } else {
                 break;

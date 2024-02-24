@@ -8,6 +8,8 @@
 namespace Small\SwooleDb\Selector;
 
 use Small\SwooleDb\Core\Record;
+use Small\SwooleDb\Core\RecordCollection;
+use Small\SwooleDb\Core\Resultset;
 use Small\SwooleDb\Core\Table;
 use Small\SwooleDb\Registry\TableRegistry;
 
@@ -26,15 +28,22 @@ class Join
 
     }
 
-    /**
-     * Get foreign records for a record of from table
-     * @param Record $fromRecord
-     * @return Record[]
-     */
-    public function get(Record $fromRecord): array
+    public function getToTableName(): string
     {
 
-        return $this->from->getJoinedRecords($this->foreignKeyName, $fromRecord);
+        return $this->from->getForeignTable($this->foreignKeyName);
+
+    }
+
+    /**
+     * Get foreign records for a record of from table
+     * @param RecordCollection $fromRecord
+     * @return Resultset
+     */
+    public function get(RecordCollection $fromRecord): Resultset
+    {
+
+        return $this->from->getJoinedRecords($this->foreignKeyName, $fromRecord, $this->alias);
 
     }
 

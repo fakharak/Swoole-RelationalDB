@@ -7,8 +7,8 @@ use Small\Collection\Contract\CheckValueInterface;
 use Small\SwooleDb\Exception\RecordCollectionException;
 
 /**
- * @method Record current()
- * @method Record offsetGet(mixed $offset)
+ * @method RecordCollection current()
+ * @method RecordCollection offsetGet(mixed $offset)
  */
 class Resultset extends Collection
     implements CheckValueInterface

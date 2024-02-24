@@ -8,7 +8,7 @@
 namespace Small\SwooleDb\Selector\Bean;
 
 use Small\Collection\Collection\Collection;
-use Small\SwooleDb\Core\Record;
+use Small\SwooleDb\Core\RecordCollection;
 use Small\SwooleDb\Selector\Enum\ConditionOperator;
 use Small\SwooleDb\Selector\Exception\SyntaxErrorException;
 
@@ -60,11 +60,11 @@ readonly class Condition
 
     /**
      * Validate condition with records
-     * @param Record[] $records
+     * @param RecordCollection $records
      * @return bool
      * @throws SyntaxErrorException
      */
-    public function validateCondition(array $records): bool
+    public function validateCondition(RecordCollection $records): bool
     {
 
         switch ($this->operator) {

@@ -40,6 +40,8 @@ class Table implements \Iterator
     /** @var Index[] */
     protected array $indexes = [];
 
+    protected bool $created = false;
+
     public function __construct(
         protected string $name,
         private int $maxSize,
@@ -61,6 +63,8 @@ class Table implements \Iterator
     {
 
         $this->openswooleTable->create();
+
+        $this->created = true;
 
         return $this;
 
@@ -253,7 +257,6 @@ class Table implements \Iterator
                 $values[] = $value[$field];
             }
 
-            // TODO remove key
             $index->insert($key, $values);
 
         }
@@ -308,6 +311,10 @@ class Table implements \Iterator
     public function addForeignKey(string $name, string $toTableName, string $fromField, string $toField = '_key'): self
     {
 
+        if ($toField != '_key') {
+            $this->addIndex($toField);
+        }
+
         if (!isset($this->getColumns()[$fromField]) && $fromField != '_key') {
             throw new NotFoundException('Field \'' . $fromField . '\' not exists in table \'' . $this->getName() . '\' on foreign key creation');
         }
@@ -355,6 +362,13 @@ class Table implements \Iterator
 
     }
 
+    public function getForeignTable(string $foreignKeyName): string
+    {
+
+        return $this->foreignKeys[$foreignKeyName]->getToTableName();
+
+    }
+
     /**
      * Add an index
      * @param string[] $fields
@@ -363,6 +377,10 @@ class Table implements \Iterator
      */
     public function addIndex(array $fields): self
     {
+
+        if ($this->created == true) {
+            throw new IndexException('Indexes must be created before calling create method');
+        }
 
         if (count($fields) == 0) {
             throw new IndexException('Index must have at least one field');
@@ -385,7 +403,7 @@ class Table implements \Iterator
 
         }
 
-        $this->indexes[implode('|', $fields)] = new Index();
+        $index = $this->indexes[implode('|', $fields)] = new Index();
 
         foreach ($this as $key => $tableFields) {
 
@@ -394,10 +412,10 @@ class Table implements \Iterator
                 $values[] = $tableFields[$field];
             }
 
-            $this->indexes[implode('|', $fields)]
+            $index
                 ->insert(
                     $key ?? throw new \LogicException('Null key error'),
-                    count($fields) == 1 ? $values[0] : $values
+                    $values
                 )
             ;
 
@@ -536,13 +554,13 @@ class Table implements \Iterator
 
     /**
      * @param string $foreignKeyName
-     * @param Record $from
-     * @return Record[]
+     * @param RecordCollection $from
+     * @return Resultset
      */
-    public function getJoinedRecords(string $foreignKeyName, Record $from): array
+    public function getJoinedRecords(string $foreignKeyName, RecordCollection $from, string $alias = null): Resultset
     {
 
-        return $this->foreignKeys[$foreignKeyName]->getForeignRecords($from);
+        return $this->foreignKeys[$foreignKeyName]->getForeignRecords($from[$this->name], $alias);
 
     }
 
@@ -592,6 +610,17 @@ class Table implements \Iterator
 
         foreach ($this->foreignKeys as $foreignKey) {
             $foreignKey->deleteFromForeignIndex($key);
+        }
+
+        foreach ($this->indexes as $indexKey => $index) {
+
+            $values = [];
+            foreach (explode('|', $indexKey) as $field) {
+                $values[] = $this->get($key, [$field]);
+            }
+
+            $index->remove($key, $values);
+
         }
 
         return $this->openswooleTable->del((string)$key);

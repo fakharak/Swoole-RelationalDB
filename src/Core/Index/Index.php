@@ -43,6 +43,25 @@ class Index implements \JsonSerializable
     }
 
     /**
+     * Insert a value
+     * @param string $key
+     * @param mixed $value
+     * @return $this
+     */
+    public function remove(string $key, mixed $value): self
+    {
+
+        if ($this->root === null) {
+            $this->root = new IndexNode($this);
+        }
+
+        $this->root->removeKey($key, $value);
+
+        return $this;
+
+    }
+
+    /**
      * @param Operator $operator
      * @param mixed $value
      * @return string[]

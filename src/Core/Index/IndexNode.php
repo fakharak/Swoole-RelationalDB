@@ -77,13 +77,42 @@ class IndexNode implements \JsonSerializable
      * Search keys for value equal
      * @param mixed $value
      * @return string[]
+     * @throws IndexException
      */
     public function searchEqual(mixed $value): array
     {
 
+        return $this->searchNode($value)->data?->getKeys() ?? [];
+
+    }
+
+    public function removeKey(string $key, mixed $value): self
+    {
+
+        $node = $this->searchNode($value);
+
+        if ($node != null) {
+
+            $node->data?->removeKey($key);
+
+        }
+
+        return $this;
+
+    }
+
+    /**
+     * Search node for value equal
+     * @param mixed $value
+     * @return IndexNode
+     * @throws IndexException
+     */
+    protected function searchNode(mixed $value): IndexNode|null
+    {
+
         if (!is_array($value) && $value == $this->data?->getValue()) {
 
-            return $this->data?->getKeys() ?? [];
+            return $this;
 
         } else if (is_array($value)) {
 
@@ -105,7 +134,7 @@ class IndexNode implements \JsonSerializable
             }
 
             if ($found) {
-                return $this->data->getKeys();
+                return $this;
             }
 
         }
@@ -113,17 +142,17 @@ class IndexNode implements \JsonSerializable
         if ($this->data?->inferior($value)) {
 
             if (!array_key_exists(1, $this->childs)) {
-                return [];
+                return null;
             } else {
-                return $this->childs[1]->searchEqual($value);
+                return $this->childs[1]->searchNode($value);
             }
 
         } else {
 
             if (!array_key_exists(0, $this->childs)) {
-                return [];
+                return null;
             } else {
-                return $this->childs[0]->searchEqual($value);
+                return $this->childs[0]->searchNode($value);
             }
 
         }

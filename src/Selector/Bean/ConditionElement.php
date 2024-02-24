@@ -8,7 +8,7 @@
 namespace Small\SwooleDb\Selector\Bean;
 
 use Small\Collection\Collection\Collection;
-use Small\SwooleDb\Core\Record;
+use Small\SwooleDb\Core\RecordCollection;
 use Small\SwooleDb\Exception\WrongFormatException;
 use Small\SwooleDb\Selector\Enum\ConditionElementType;
 use Small\SwooleDb\Selector\Exception\SyntaxErrorException;
@@ -94,10 +94,10 @@ class ConditionElement
 
     /**
      * Compute value for a record
-     * @param Record[] $records
+     * @param RecordCollection $records
      * @return mixed[]|float|int|string|null
      */
-    public function computeValue(array $records): Collection|array|float|int|string|null
+    public function computeValue(RecordCollection $records): Collection|array|float|int|string|null
     {
 
         switch ($this->type)
