@@ -49,9 +49,11 @@ class TableTest extends TestCase
         $table->addColumn(
             new Column('price', ColumnType::float)
         );
-        $table->create();
+
         $table->addIndex(['name']);
         $table->addIndex(['price']);
+
+        $table->create();
 
         $name = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         foreach (range(1, 10000) as $value) {

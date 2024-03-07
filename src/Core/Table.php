@@ -165,7 +165,7 @@ class Table implements \Iterator
             if ($value !== null && in_array($this->getColumns()[$column]->getType(), [ColumnType::int, ColumnType::float])) {
 
                 if (!is_int($value) && !is_float($value)) {
-                    throw new \LogicException('Impossible value for type');
+                    throw new \LogicException('Impossible value for type (' . gettype($value) . ')');
                 }
 
                 $array[$column . '::sign'] = $value < 0 ? 1 : 0;
@@ -175,19 +175,19 @@ class Table implements \Iterator
             switch($this->getColumns()[$column]->getType()) {
                 case ColumnType::int:
                     if (!is_int($value)) {
-                        throw new \LogicException('Impossible value for type');
+                        throw new \LogicException('Impossible value for type (' . gettype($value) . ')');
                     }
                     $array[$column] = (int)$value;
                     break;
                 case ColumnType::float:
                     if (!is_int($value) && !is_float($value)) {
-                        throw new \LogicException('Impossible value for type');
+                        throw new \LogicException('Impossible value for type (' . gettype($value) . ')');
                     }
                     $array[$column] = (float)$value;
                     break;
                 case ColumnType::string:
                     if (!is_string($value)) {
-                        throw new \LogicException('Impossible value for type');
+                        throw new \LogicException('Impossible value for type (' . gettype($value) . ')');
                     }
                     $array[$column] = $value;
                     break;
@@ -239,29 +239,72 @@ class Table implements \Iterator
 
     /**
      * @param string $key
-     * @param mixed[] $value
+     * @param mixed[] $setValues
      * @return bool
      */
-    public function set(string $key, array $value): bool
+    public function set(string $key, array $setValues): bool
     {
 
         $result = [];
-        foreach ($value as $field => $item) {
+        foreach ($setValues as $field => $item) {
             $result[$field] = $item === null ? $this->getColumns()[$field]->getNullValue() : $item;
         }
 
         foreach ($this->indexes as $fieldsString => $index) {
 
-            $values = [];
+            $indexValues = [];
             foreach (explode('|', $fieldsString) as $field) {
-                $values[] = $value[$field];
+                $indexValues[] = $setValues[$field];
             }
 
-            $index->insert($key, $values);
+            $index->insert($key, $indexValues);
 
         }
 
+        $this->addToForeignKeys($key, $setValues);
+
         return $this->openswooleTable->set($key, $this->setMetasValues($result));
+
+    }
+
+    /**
+     * @param mixed[] $values
+     * @return $this
+     * @throws FieldValueIsNull
+     * @throws NotFoundException
+     * @throws \Small\SwooleDb\Exception\TableNotExists
+     */
+    public function addToForeignKeys(string $key, array $values): self
+    {
+
+        foreach ($this->foreignKeys as $name => $foreignKey) {
+
+            if ($foreignKey->getFromField() != '_key' && $foreignKey->getToField() == '_key') {
+
+                $foreignKey->addToForeignIndex(
+                    $values[$foreignKey->getFromField()],
+                    $values[$foreignKey->getFromField()]
+                );
+
+                $foreignKey->getReflected()
+                    ->addToForeignIndex(
+                        $values[$foreignKey->getFromField()],
+                        $key
+                    );
+
+            } else if ($foreignKey->getFromField() == '_key' && $foreignKey->getToField() == '_key') {
+
+                $foreignKey->addToForeignIndex($key, $key);
+
+                $foreignKey->getReflected()
+                    ->addToForeignIndex($key, $key)
+                ;
+
+            }
+
+        }
+
+        return $this;
 
     }
 
@@ -312,7 +355,7 @@ class Table implements \Iterator
     {
 
         if ($toField != '_key') {
-            $this->addIndex($toField);
+            $this->addIndex([$toField]);
         }
 
         if (!isset($this->getColumns()[$fromField]) && $fromField != '_key') {
@@ -355,8 +398,11 @@ class Table implements \Iterator
         $foreignKey = new ForeignKey($name, $this->name, $fromField, $toTableName, $toField, ForeignKeyType::from);
         $this->foreignKeys[$name] = $linkFn($foreignKey, $this, $toTable, $fromField, $toField);
 
-        $foreignKey = new ForeignKey($name, $toTableName, $toField, $this->name, $fromField, ForeignKeyType::to);
-        $toTable->foreignKeys[$name] = $linkFn($foreignKey, $toTable, $this, $toField, $fromField);
+        $foreignKeyReflection = new ForeignKey($name, $toTableName, $toField, $this->name, $fromField, ForeignKeyType::to);
+        $toTable->foreignKeys[$name] = $linkFn($foreignKeyReflection, $toTable, $this, $toField, $fromField);
+
+        $foreignKey->setReflected($foreignKeyReflection);
+        $foreignKeyReflection->setReflected($foreignKey);
 
         return $this;
 
@@ -377,10 +423,6 @@ class Table implements \Iterator
      */
     public function addIndex(array $fields): self
     {
-
-        if ($this->created == true) {
-            throw new IndexException('Indexes must be created before calling create method');
-        }
 
         if (count($fields) == 0) {
             throw new IndexException('Index must have at least one field');
@@ -405,20 +447,17 @@ class Table implements \Iterator
 
         $index = $this->indexes[implode('|', $fields)] = new Index();
 
-        foreach ($this as $key => $tableFields) {
+        if ($this->created) {
+            foreach ($this as $key => $record) {
 
-            $values = [];
-            foreach ($fields as $field) {
-                $values[] = $tableFields[$field];
+                $values = [];
+                foreach ($fields as $field) {
+                    $values[] = $record[$field];
+                }
+
+                $index->insert($key ?? '', $values);
+
             }
-
-            $index
-                ->insert(
-                    $key ?? throw new \LogicException('Null key error'),
-                    $values
-                )
-            ;
-
         }
 
         return $this;
@@ -605,7 +644,7 @@ class Table implements \Iterator
 
     }
 
-    public function del(int|string $key): bool
+    public function del(string $key): bool
     {
 
         foreach ($this->foreignKeys as $foreignKey) {
@@ -616,7 +655,7 @@ class Table implements \Iterator
 
             $values = [];
             foreach (explode('|', $indexKey) as $field) {
-                $values[] = $this->get($key, [$field]);
+                $values[] = $this->get($key, $field);
             }
 
             $index->remove($key, $values);

@@ -82,7 +82,7 @@ class IndexNode implements \JsonSerializable
     public function searchEqual(mixed $value): array
     {
 
-        return $this->searchNode($value)->data?->getKeys() ?? [];
+        return $this->searchNode($value)?->data?->getKeys() ?? [];
 
     }
 

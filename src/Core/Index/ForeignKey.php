@@ -28,6 +28,7 @@ class ForeignKey
     const INDEX_MAX_SIZE = 1048576;
 
     protected Table $foreignIndex;
+    protected ForeignKey $reflected;
 
     public function __construct(
         protected string $keyName,
@@ -48,11 +49,53 @@ class ForeignKey
         }
 
         try {
-            $this->foreignIndex = TableRegistry::getInstance()->getTable($prefix . $this->keyName);
+            $this->foreignIndex = TableRegistry::getInstance()->getTable($prefix . $this->fromTable . '_' . $this->keyName);
         } catch (TableNotExists) {
-            $this->foreignIndex = TableRegistry::getInstance()->createTable($prefix . $this->keyName, self::INDEX_MAX_SIZE);
+            $this->foreignIndex = TableRegistry::getInstance()->createTable($prefix . $this->fromTable . '_' . $this->keyName, self::INDEX_MAX_SIZE);
             $this->createForeignIndexTable();
         }
+    }
+
+    public function getReflected(): ForeignKey
+    {
+        return $this->reflected;
+    }
+
+    public function setReflected(ForeignKey $reflected): void
+    {
+        $this->reflected = $reflected;
+    }
+
+
+
+    public function getKeyName(): string
+    {
+        return $this->keyName;
+    }
+
+    public function getFromTable(): string
+    {
+        return $this->fromTable;
+    }
+
+    public function getFromField(): string
+    {
+        return $this->fromField;
+    }
+
+    public function getToTable(): string
+    {
+        return $this->toTable;
+    }
+
+    public function getToField(): string
+    {
+        return $this->toField;
+    }
+
+    public function getType(): ForeignKeyType
+    {
+        return $this->type;
     }
 
     public function getToTableName(): string
@@ -93,12 +136,15 @@ class ForeignKey
     {
 
         for ($i = 0; $i < self::INDEX_MAX_SIZE; $i++) {
+
             if (!$this->foreignIndex->exists($value . '_' . $i)) {
                 break;
             }
+
             if ($this->foreignIndex->get($value . '_' . $i, 'foreignKey') == $foreignKey) {
                 return $this;
             }
+
         }
 
         $this->foreignIndex->set($value . '_' . $i, ['foreignKey' => $foreignKey, 'valid' => 1]);

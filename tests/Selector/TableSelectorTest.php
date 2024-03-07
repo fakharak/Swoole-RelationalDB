@@ -20,6 +20,7 @@ use Small\SwooleDb\Selector\Enum\ConditionElementType;
 use Small\SwooleDb\Selector\Enum\ConditionOperator;
 use Small\SwooleDb\Selector\TableSelector;
 use function _PHPStan_156ee64ba\React\Promise\Timer\timeout;
+use function _PHPStan_cc8d35ffb\Symfony\Component\String\b;
 
 class TableSelectorTest extends TestCase
 {
@@ -78,19 +79,23 @@ class TableSelectorTest extends TestCase
         $table = TableRegistry::getInstance()->createTable('testSelectJoin', 5);
         $table->addColumn(new Column('name', ColumnType::string, 255));
         $table->addColumn(new Column('price', ColumnType::float));
+
         $table->create();
+
         $table->set(0, ['name' => 'john', 'price' => 12.5]);
         $table->set(1, ['name' => 'paul', 'price' => 34.9]);
 
         $table2 = TableRegistry::getInstance()->createTable('testSelectJoinPost', 5);
         $table2->addColumn(new Column('message', ColumnType::string, 255));
-        $table2->addColumn(new Column('ownerId', ColumnType::int, 16));
+        $table2->addColumn(new Column('ownerId', ColumnType::string, 16));
+
         $table2->create();
-        $table2->set(0, ['message' => 'ceci est un test', 'ownerId' => 0]);
-        $table2->set(1, ['message' => 'ceci est un autre test', 'ownerId' => 1]);
-        $table2->set(2, ['message' => 'ceci est une suite de test', 'ownerId' => 1]);
 
         $table2->addForeignKey('messageOwner', 'testSelectJoin', 'ownerId');
+
+        $table2->set(0, ['message' => 'ceci est un test', 'ownerId' => '0']);
+        $table2->set(1, ['message' => 'ceci est un autre test', 'ownerId' => '1']);
+        $table2->set(2, ['message' => 'ceci est une suite de test', 'ownerId' => '1']);
 
         $result = (new TableSelector('testSelectJoin', 'user'))
             ->join('testSelectJoin', 'messageOwner', 'message')
@@ -156,10 +161,11 @@ class TableSelectorTest extends TestCase
         $table->addColumn(
             new Column('price', ColumnType::float)
         );
-        $table->create();
+
         $table->addIndex(['name']);
         $table->addIndex(['price']);
 
+        $table->create();
         foreach (range(1, 100) as $value) {
             $table->set($value, ['name' => 'john', 'price' => $value]);
             $table->set($value + 100, ['name' => 'doe', 'price' => $value]);
@@ -194,24 +200,27 @@ class TableSelectorTest extends TestCase
         $table = TableRegistry::getInstance()->createTable('testSelectJoinIndex', 5);
         $table->addColumn(new Column('name', ColumnType::string, 255));
         $table->addColumn(new Column('price', ColumnType::float));
+
+        $table->addIndex(['name']);
+
         $table->create();
 
         $table2 = TableRegistry::getInstance()->createTable('testSelectJoinIterationsIndex', 1000);
         $table2->addColumn(new Column('iterator', ColumnType::int, 32));
-        $table2->addColumn(new Column('ownerId', ColumnType::int, 16));
-        $table2->create();
+        $table2->addColumn(new Column('ownerId', ColumnType::string, 16));
 
-        $table->set(0, ['name' => 'john', 'price' => 5.25]);
-        $table->set(1, ['name' => 'paul', 'price' => 12.75]);
-        foreach (range(1, 100) as $value) {
-            $table2->set($value, ['iterator' => $value, 'ownerId' => 0]);
-            $table2->set($value + 100, ['iterator' => $value, 'ownerId' => 1]);
-        }
-
-        $table->addIndex(['name']);
         $table2->addIndex(['iterator']);
 
+        $table2->create();
+
         $table2->addForeignKey('owner', 'testSelectJoinIndex', 'ownerId');
+
+        $table->set('0', ['name' => 'john', 'price' => 5.25]);
+        $table->set('1', ['name' => 'paul', 'price' => 12.75]);
+        foreach (range(1, 100) as $value) {
+            $table2->set((string)$value, ['iterator' => $value, 'ownerId' => '0']);
+            $table2->set((string)$value + 100, ['iterator' => $value, 'ownerId' => '1']);
+        }
 
         ($query = new TableSelector('testSelectJoinIndex'))
             ->join('testSelectJoinIndex', 'owner', 'iterations')
