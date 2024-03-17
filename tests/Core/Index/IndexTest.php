@@ -12,7 +12,7 @@ class IndexTest extends TestCase
     public function testSignle()
     {
 
-        $index = new Index('testSignle', 1000, 32);
+        $index = new Index('testSignle', 10000, 32);
         $report = [];
         foreach (range(1, 1000) as $value) {
             $index->insert($value, [$report[$value] = $value]);
@@ -49,7 +49,7 @@ class IndexTest extends TestCase
     public function testMulti()
     {
 
-        $index = new Index('testMulti', 1000, 32);
+        $index = new Index('testMulti', 10000, 32);
         $report = [];
         foreach (range(1, 1000) as $value) {
             $index->insert($value, [$report[$value] = rand(1, 1000), $report2[$value] = rand(1, 1000)]);
