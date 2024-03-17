@@ -8,6 +8,7 @@
 namespace Small\SwooleDb\Test\Selector\Bean;
 
 use PHPUnit\Framework\TestCase;
+use Small\SwooleDb\Core\RecordCollection;
 use Small\SwooleDb\Selector\Bean\Bracket;
 use Small\SwooleDb\Selector\Bean\Condition;
 use Small\SwooleDb\Selector\Bean\ConditionElement;
@@ -35,7 +36,7 @@ class BracketTest extends TestCase
                 ConditionOperator::equal,
                 new ConditionElement(ConditionElementType::const, 1),
             ));
-        self::assertTrue($bracket->validateBracket([]));
+        self::assertTrue($bracket->validateBracket(new RecordCollection()));
 
         $bracket = (new Bracket())
             ->firstCondition(new Condition(
@@ -51,7 +52,7 @@ class BracketTest extends TestCase
                 ConditionOperator::equal,
                 new ConditionElement(ConditionElementType::const, 1),
             ));
-        self::assertFalse($bracket->validateBracket([]));
+        self::assertFalse($bracket->validateBracket(new RecordCollection()));
 
         $bracket = (new Bracket())
             ->firstCondition(new Condition(
@@ -67,7 +68,7 @@ class BracketTest extends TestCase
                 ConditionOperator::equal,
                 new ConditionElement(ConditionElementType::const, 1),
             ));
-        self::assertFalse($bracket->validateBracket([]));
+        self::assertFalse($bracket->validateBracket(new RecordCollection()));
 
         $bracket = (new Bracket())
             ->firstCondition(new Condition(
@@ -83,7 +84,7 @@ class BracketTest extends TestCase
                 ConditionOperator::equal,
                 new ConditionElement(ConditionElementType::const, 1),
             ));
-        self::assertFalse($bracket->validateBracket([]));
+        self::assertFalse($bracket->validateBracket(new RecordCollection()));
 
     }
 
@@ -104,7 +105,7 @@ class BracketTest extends TestCase
                 ConditionOperator::equal,
                 new ConditionElement(ConditionElementType::const, 1),
             ));
-        self::assertTrue($bracket->validateBracket([]));
+        self::assertTrue($bracket->validateBracket(new RecordCollection()));
 
         $bracket = (new Bracket())
             ->firstCondition(new Condition(
@@ -120,7 +121,7 @@ class BracketTest extends TestCase
                 ConditionOperator::equal,
                 new ConditionElement(ConditionElementType::const, 1),
             ));
-        self::assertTrue($bracket->validateBracket([]));
+        self::assertTrue($bracket->validateBracket(new RecordCollection()));
 
         $bracket = (new Bracket())
             ->firstCondition(new Condition(
@@ -136,7 +137,7 @@ class BracketTest extends TestCase
                 ConditionOperator::equal,
                 new ConditionElement(ConditionElementType::const, 1),
             ));
-        self::assertTrue($bracket->validateBracket([]));
+        self::assertTrue($bracket->validateBracket(new RecordCollection()));
 
         $bracket = (new Bracket())
             ->firstCondition(new Condition(
@@ -152,7 +153,7 @@ class BracketTest extends TestCase
                 ConditionOperator::equal,
                 new ConditionElement(ConditionElementType::const, 1),
             ));
-        self::assertTrue($bracket->validateBracket([]));
+        self::assertTrue($bracket->validateBracket(new RecordCollection()));
 
         $bracket = (new Bracket())
             ->firstCondition(new Condition(
@@ -168,7 +169,7 @@ class BracketTest extends TestCase
                 ConditionOperator::equal,
                 new ConditionElement(ConditionElementType::const, 1),
             ));
-        self::assertFalse($bracket->validateBracket([]));
+        self::assertFalse($bracket->validateBracket(new RecordCollection()));
 
     }
 
@@ -189,7 +190,7 @@ class BracketTest extends TestCase
                 ConditionOperator::equal,
                 new ConditionElement(ConditionElementType::const, 1),
             ));
-        self::assertTrue($bracket->validateBracket([]));
+        self::assertTrue($bracket->validateBracket(new RecordCollection()));
 
         $bracket = (new Bracket())
             ->firstCondition(new Condition(
@@ -205,7 +206,7 @@ class BracketTest extends TestCase
                 ConditionOperator::equal,
                 new ConditionElement(ConditionElementType::const, 1),
             ));
-        self::assertTrue($bracket->validateBracket([]));
+        self::assertTrue($bracket->validateBracket(new RecordCollection()));
 
         $bracket = (new Bracket())
             ->firstCondition(new Condition(
@@ -221,7 +222,7 @@ class BracketTest extends TestCase
                 ConditionOperator::equal,
                 new ConditionElement(ConditionElementType::const, 1),
             ));
-        self::assertTrue($bracket->validateBracket([]));
+        self::assertTrue($bracket->validateBracket(new RecordCollection()));
 
         $bracket = (new Bracket())
             ->firstCondition(new Condition(
@@ -237,7 +238,7 @@ class BracketTest extends TestCase
                 ConditionOperator::equal,
                 new ConditionElement(ConditionElementType::const, 1),
             ));
-        self::assertFalse($bracket->validateBracket([]));
+        self::assertFalse($bracket->validateBracket(new RecordCollection()));
 
     }
 
@@ -265,7 +266,7 @@ class BracketTest extends TestCase
                 ConditionOperator::equal,
                 new ConditionElement(ConditionElementType::const, 1),
             ));
-        self::assertTrue($bracket->validateBracket([]));
+        self::assertTrue($bracket->validateBracket(new RecordCollection()));
 
         $bracket = new Bracket();
         $bracket->firstBracket()
@@ -288,7 +289,7 @@ class BracketTest extends TestCase
                 ConditionOperator::equal,
                 new ConditionElement(ConditionElementType::const, 1),
             ));
-        self::assertTrue($bracket->validateBracket([]));
+        self::assertTrue($bracket->validateBracket(new RecordCollection()));
 
         $bracket = new Bracket();
         $bracket->firstBracket()
@@ -311,7 +312,7 @@ class BracketTest extends TestCase
                 ConditionOperator::equal,
                 new ConditionElement(ConditionElementType::const, 1),
             ));
-        self::assertTrue($bracket->validateBracket([]));
+        self::assertTrue($bracket->validateBracket(new RecordCollection()));
 
     }
 

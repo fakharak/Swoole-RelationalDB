@@ -11,6 +11,7 @@ use PHPUnit\Framework\TestCase;
 use Small\SwooleDb\Core\Column;
 use Small\SwooleDb\Core\Enum\ColumnType;
 use Small\SwooleDb\Core\Record;
+use Small\SwooleDb\Core\RecordCollection;
 use Small\SwooleDb\Registry\TableRegistry;
 
 class ForeignKeyTest extends TestCase
@@ -37,19 +38,18 @@ class ForeignKeyTest extends TestCase
         $projectTable->addForeignKey('projectOwner', 'user', 'ownerId');
 
         $record = $projectTable->getRecord(0);
-        $records = $projectTable->getJoinedRecords('projectOwner', $record);
-        self::assertEquals('john', $records[0]->getValue('name'));
+        $records = $projectTable->getJoinedRecords('projectOwner', new RecordCollection([$projectTable->getName() => $record]));
+        self::assertEquals('john', $records[0]['user']->getValue('name'));
         $record = $projectTable->getRecord(1);
-        $records = $projectTable->getJoinedRecords('projectOwner', $record);
-        self::assertEquals('john', $records[0]->getValue('name'));
+        $records = $projectTable->getJoinedRecords('projectOwner', new RecordCollection([$projectTable->getName() => $record]));
+        self::assertEquals('john', $records[0]['user']->getValue('name'));
         $record = $projectTable->getRecord(2);
-        $records = $projectTable->getJoinedRecords('projectOwner', $record);
-        self::assertEquals('paul', $records[0]->getValue('name'));
+        $records = $projectTable->getJoinedRecords('projectOwner', new RecordCollection([$projectTable->getName() => $record]));
+        self::assertEquals('paul', $records[0]['user']->getValue('name'));
 
         $record = $userTable->getRecord(0);
-        $records = $userTable->getJoinedRecords('projectOwner', $record);
-        self::assertEquals('zero', $records[0]->getValue('name'));
-        self::assertEquals('star wars', $records[1]->getValue('name'));
+        $records = $userTable->getJoinedRecords('projectOwner', new RecordCollection([$userTable->getName() => $record]));
+        self::assertEquals('star wars', $records[1]['project']->getValue('name'));
 
     }
 

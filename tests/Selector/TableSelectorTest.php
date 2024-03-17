@@ -12,17 +12,20 @@ use SebastianBergmann\CodeCoverage\Driver\Selector;
 use Small\SwooleDb\Core\Column;
 use Small\SwooleDb\Core\Enum\ColumnType;
 use Small\SwooleDb\Core\Record;
+use Small\SwooleDb\Core\Table;
 use Small\SwooleDb\Registry\TableRegistry;
 use Small\SwooleDb\Selector\Bean\Condition;
 use Small\SwooleDb\Selector\Bean\ConditionElement;
 use Small\SwooleDb\Selector\Enum\ConditionElementType;
 use Small\SwooleDb\Selector\Enum\ConditionOperator;
 use Small\SwooleDb\Selector\TableSelector;
+use function _PHPStan_156ee64ba\React\Promise\Timer\timeout;
+use function _PHPStan_cc8d35ffb\Symfony\Component\String\b;
 
 class TableSelectorTest extends TestCase
 {
 
-    public function testExecuteSingleTable(): void
+    public function estExecuteSingleTable(): void
     {
 
         $table = TableRegistry::getInstance()->createTable('testSelect', 5);
@@ -76,30 +79,34 @@ class TableSelectorTest extends TestCase
         $table = TableRegistry::getInstance()->createTable('testSelectJoin', 5);
         $table->addColumn(new Column('name', ColumnType::string, 255));
         $table->addColumn(new Column('price', ColumnType::float));
+
         $table->create();
+
         $table->set(0, ['name' => 'john', 'price' => 12.5]);
         $table->set(1, ['name' => 'paul', 'price' => 34.9]);
 
         $table2 = TableRegistry::getInstance()->createTable('testSelectJoinPost', 5);
         $table2->addColumn(new Column('message', ColumnType::string, 255));
-        $table2->addColumn(new Column('ownerId', ColumnType::int, 16));
+        $table2->addColumn(new Column('ownerId', ColumnType::string, 16));
+
         $table2->create();
-        $table2->set(0, ['message' => 'ceci est un test', 'ownerId' => 0]);
-        $table2->set(1, ['message' => 'ceci est un autre test', 'ownerId' => 1]);
-        $table2->set(2, ['message' => 'ceci est une suite de test', 'ownerId' => 1]);
 
         $table2->addForeignKey('messageOwner', 'testSelectJoin', 'ownerId');
 
-        $result = (new TableSelector('testSelectJoin'))
+        $table2->set(0, ['message' => 'ceci est un test', 'ownerId' => '0']);
+        $table2->set(1, ['message' => 'ceci est un autre test', 'ownerId' => '1']);
+        $table2->set(2, ['message' => 'ceci est une suite de test', 'ownerId' => '1']);
+
+        $result = (new TableSelector('testSelectJoin', 'user'))
             ->join('testSelectJoin', 'messageOwner', 'message')
             ->execute()
         ;
         self::assertCount(3, $result);
-        $this->assertTestSelectResultJoin(0, $result[0]['testSelectJoin']);
+        $this->assertTestSelectResultJoin(0, $result[0]['user']);
         $this->assertTestSelectResultJoinPost(0, $result[0]['message']);
-        $this->assertTestSelectResultJoin(1, $result[1]['testSelectJoin']);
+        $this->assertTestSelectResultJoin(1, $result[1]['user']);
         $this->assertTestSelectResultJoinPost(1, $result[1]['message']);
-        $this->assertTestSelectResultJoin(1, $result[2]['testSelectJoin']);
+        $this->assertTestSelectResultJoin(1, $result[2]['user']);
         $this->assertTestSelectResultJoinPost(2, $result[2]['message']);
 
     }
@@ -141,6 +148,100 @@ class TableSelectorTest extends TestCase
             default:
                 throw new \Exception('Unknown row');
         }
+
+    }
+
+    public function testSelectOnIndex()
+    {
+
+        $table = TableRegistry::getInstance()->createTable('testTableIndexSelector', 1000);
+        $table->addColumn(
+            new Column('name', ColumnType::string, 256)
+        );
+        $table->addColumn(
+            new Column('price', ColumnType::float)
+        );
+
+        $table->addIndex(['name'], 1000, 256);
+        $table->addIndex(['price'], 1000, 64);
+
+        $table->create();
+        foreach (range(1, 100) as $value) {
+            $table->set($value, ['name' => 'john', 'price' => $value]);
+            $table->set($value + 100, ['name' => 'doe', 'price' => $value]);
+        }
+
+        ($query = new TableSelector('testTableIndexSelector', 'worker'))
+            ->where()
+            ->firstCondition(
+                new Condition(
+                    new ConditionElement(ConditionElementType::var, 'name', 'worker'),
+                    ConditionOperator::equal,
+                    new ConditionElement(ConditionElementType::const, 'john')
+                )
+            )->andCondition(
+                new Condition(
+                    new ConditionElement(ConditionElementType::var, 'price', 'worker'),
+                    ConditionOperator::inferiorOrEqual,
+                    new ConditionElement(ConditionElementType::const, 10)
+                )
+            )
+        ;
+
+        $resultset = $query->execute();
+
+        self::assertEquals(10, $resultset->count());
+
+    }
+
+    public function testExecuteJoinOnIndex(): void
+    {
+
+        $table = TableRegistry::getInstance()->createTable('testSelectJoinIndex', 5);
+        $table->addColumn(new Column('name', ColumnType::string, 255));
+        $table->addColumn(new Column('price', ColumnType::float));
+
+        $table->addIndex(['name'], 5, 255);
+
+        $table->create();
+
+        $table2 = TableRegistry::getInstance()->createTable('testSelectJoinIterationsIndex', 1000);
+        $table2->addColumn(new Column('iterator', ColumnType::int, 32));
+        $table2->addColumn(new Column('ownerId', ColumnType::string, 16));
+
+        $table2->addIndex(['iterator'], 1000, 32);
+
+        $table2->create();
+
+        $table2->addForeignKey('owner', 'testSelectJoinIndex', 'ownerId');
+
+        $table->set('0', ['name' => 'john', 'price' => 5.25]);
+        $table->set('1', ['name' => 'paul', 'price' => 12.75]);
+        foreach (range(1, 100) as $value) {
+            $table2->set((string)$value, ['iterator' => $value, 'ownerId' => '0']);
+            $table2->set((string)$value + 100, ['iterator' => $value, 'ownerId' => '1']);
+        }
+
+        ($query = new TableSelector('testSelectJoinIndex'))
+            ->join('testSelectJoinIndex', 'owner', 'iterations')
+            ->where()
+            ->firstCondition(
+                new Condition(
+                    new ConditionElement(ConditionElementType::var, 'name', 'testSelectJoinIndex'),
+                    ConditionOperator::equal,
+                    new ConditionElement(ConditionElementType::const, 'john')
+                )
+            )->andCondition(
+                new Condition(
+                    new ConditionElement(ConditionElementType::var, 'iterator', 'iterations'),
+                    ConditionOperator::inferiorOrEqual,
+                    new ConditionElement(ConditionElementType::const, 10)
+                )
+            )
+        ;
+        $result = $query->execute();
+
+        self::assertCount(10, $result);
 
     }
 

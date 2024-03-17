@@ -12,19 +12,19 @@ class IndexTest extends TestCase
     public function testSignle()
     {
 
-        $index = new Index();
+        $index = new Index('testSignle', 1000, 32);
         $report = [];
         foreach (range(1, 1000) as $value) {
-            $index->insert($value, $report[$value] = rand(1, 1000));
+            $index->insert($value, [$report[$value] = $value]);
         }
 
-        $lesser = $index->getKeys(Operator::inferior, 50);
-        $greaterOrEqual = $index->getKeys(Operator::superiorOrEqual, 50);
+        $lesser = $index->getKeys(Operator::inferior, [50]);
+        $greaterOrEqual = $index->getKeys(Operator::superiorOrEqual, [50]);
 
         self::assertEquals(1000, count($lesser) + count($greaterOrEqual));
 
-        $lesserOrEqual = $index->getKeys(Operator::inferiorOrEqual, 50);
-        $greater = $index->getKeys(Operator::superior, 50);
+        $lesserOrEqual = $index->getKeys(Operator::inferiorOrEqual, [50]);
+        $greater = $index->getKeys(Operator::superior, [50]);
 
         self::assertEquals(1000, count($lesserOrEqual) + count($greater));
 
@@ -49,7 +49,7 @@ class IndexTest extends TestCase
     public function testMulti()
     {
 
-        $index = new Index();
+        $index = new Index('testMulti', 1000, 32);
         $report = [];
         foreach (range(1, 1000) as $value) {
             $index->insert($value, [$report[$value] = rand(1, 1000), $report2[$value] = rand(1, 1000)]);

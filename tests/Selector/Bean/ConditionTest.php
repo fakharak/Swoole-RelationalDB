@@ -9,6 +9,7 @@ namespace Small\SwooleDb\Test\Selector\Bean;
 
 use PHPUnit\Framework\TestCase;
 use Small\SwooleDb\Core\Record;
+use Small\SwooleDb\Core\RecordCollection;
 use Small\SwooleDb\Selector\Bean\Condition;
 use Small\SwooleDb\Selector\Bean\ConditionElement;
 use Small\SwooleDb\Selector\Enum\ConditionElementType;
@@ -40,22 +41,22 @@ class ConditionTest extends TestCase
             new ConditionElement(ConditionElementType::const, 2),
             ConditionOperator::equal,
             new ConditionElement(ConditionElementType::const, 2),
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::const, 1),
             ConditionOperator::equal,
             new ConditionElement(ConditionElementType::const, 2),
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertTrue((new Condition(
             new ConditionElement(ConditionElementType::var, 'field1', 'test'),
             ConditionOperator::equal,
             new ConditionElement(ConditionElementType::var, 'field2', "test2"),
-        ))->validateCondition([
+        ))->validateCondition(new RecordCollection([
             'test' => new Record('test', 0, ['field1' => 5]),
             'test2' => new Record('test2', 0, ['field2' => 5]),
-        ]));
+        ])));
 
     }
 
@@ -66,22 +67,22 @@ class ConditionTest extends TestCase
             new ConditionElement(ConditionElementType::const, 1),
             ConditionOperator::notEqual,
             new ConditionElement(ConditionElementType::const, 2),
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::const, 2),
             ConditionOperator::notEqual,
             new ConditionElement(ConditionElementType::const, 2),
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertTrue((new Condition(
             new ConditionElement(ConditionElementType::var, 'field1', 'test'),
             ConditionOperator::notEqual,
             new ConditionElement(ConditionElementType::var, 'field2', "test2"),
-        ))->validateCondition([
+        ))->validateCondition(new RecordCollection([
             'test' => new Record('test', 0, ['field1' => 5]),
             'test2' => new Record('test2', 0, ['field2' => 2]),
-        ]));
+        ])));
 
     }
 
@@ -92,28 +93,28 @@ class ConditionTest extends TestCase
             new ConditionElement(ConditionElementType::const, 1),
             ConditionOperator::inferior,
             new ConditionElement(ConditionElementType::const, 2),
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::const, 2),
             ConditionOperator::inferior,
             new ConditionElement(ConditionElementType::const, 2),
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::const, 3),
             ConditionOperator::inferior,
             new ConditionElement(ConditionElementType::const, 3),
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertTrue((new Condition(
             new ConditionElement(ConditionElementType::var, 'field1', 'test'),
             ConditionOperator::inferior,
             new ConditionElement(ConditionElementType::var, 'field2', 'test2'),
-        ))->validateCondition([
+        ))->validateCondition(new RecordCollection([
             'test' => new Record('test', 0, ['field1' => 1]),
             'test2' => new Record('test2', 0, ['field2' => 2]),
-        ]));
+        ])));
 
     }
 
@@ -124,28 +125,28 @@ class ConditionTest extends TestCase
             new ConditionElement(ConditionElementType::const, 1),
             ConditionOperator::inferiorOrEqual,
             new ConditionElement(ConditionElementType::const, 2),
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertTrue((new Condition(
             new ConditionElement(ConditionElementType::const, 2),
             ConditionOperator::inferiorOrEqual,
             new ConditionElement(ConditionElementType::const, 2),
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::const, 3),
             ConditionOperator::inferiorOrEqual,
             new ConditionElement(ConditionElementType::const, 2),
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertTrue((new Condition(
             new ConditionElement(ConditionElementType::var, 'field1', 'test'),
             ConditionOperator::inferiorOrEqual,
             new ConditionElement(ConditionElementType::var, 'field2', "test2"),
-        ))->validateCondition([
+        ))->validateCondition(new RecordCollection([
             'test' => new Record('test', 0, ['field1' => 1]),
             'test2' => new Record('test2', 0, ['field2' => 2]),
-        ]));
+        ])));
 
     }
 
@@ -156,28 +157,28 @@ class ConditionTest extends TestCase
             new ConditionElement(ConditionElementType::const, 3),
             ConditionOperator::superior,
             new ConditionElement(ConditionElementType::const,  2),
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::const, 2),
             ConditionOperator::superior,
             new ConditionElement(ConditionElementType::const, 2),
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::const,  1),
             ConditionOperator::superior,
             new ConditionElement(ConditionElementType::const, 2),
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertTrue((new Condition(
             new ConditionElement(ConditionElementType::var, 'field1', 'test'),
             ConditionOperator::superior,
             new ConditionElement(ConditionElementType::var, 'field2', "test2"),
-        ))->validateCondition([
+        ))->validateCondition(new RecordCollection([
             'test' => new Record('test', 0, ['field1' => 2]),
             'test2' => new Record('test2', 0, ['field2' => 1]),
-        ]));
+        ])));
 
     }
 
@@ -188,28 +189,28 @@ class ConditionTest extends TestCase
             new ConditionElement(ConditionElementType::const, 3),
             ConditionOperator::superiorOrEqual,
             new ConditionElement(ConditionElementType::const, 2),
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertTrue((new Condition(
             new ConditionElement(ConditionElementType::const, 2),
             ConditionOperator::superiorOrEqual,
             new ConditionElement(ConditionElementType::const, 2),
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::const, 1),
             ConditionOperator::superiorOrEqual,
             new ConditionElement(ConditionElementType::const, 2),
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertTrue((new Condition(
             new ConditionElement(ConditionElementType::var, 'field1', 'test'),
             ConditionOperator::superiorOrEqual,
             new ConditionElement(ConditionElementType::var, 'field2', "test2"),
-        ))->validateCondition([
+        ))->validateCondition(new RecordCollection([
             'test' => new Record('test', 0, ['field1' => 3]),
             'test2' => new Record('test2', 0, ['field2' => 2]),
-        ]));
+        ])));
 
     }
 
@@ -220,31 +221,31 @@ class ConditionTest extends TestCase
             new ConditionElement(ConditionElementType::const, 'test'),
             ConditionOperator::like,
             new ConditionElement(ConditionElementType::const, '%'),
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertTrue((new Condition(
             new ConditionElement(ConditionElementType::const, 'test'),
             ConditionOperator::like,
             new ConditionElement(ConditionElementType::const, 'te_t'),
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertTrue((new Condition(
             new ConditionElement(ConditionElementType::const, 'test at night'),
             ConditionOperator::like,
             new ConditionElement(ConditionElementType::const, 'te_t%'),
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::const, 'tes'),
             ConditionOperator::like,
             new ConditionElement(ConditionElementType::const, 'te_t'),
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::const, 'tes at night'),
             ConditionOperator::like,
             new ConditionElement(ConditionElementType::const, 'te_t%'),
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
     }
 
@@ -254,27 +255,27 @@ class ConditionTest extends TestCase
         self::assertTrue((new Condition(
             new ConditionElement(ConditionElementType::const, null),
             ConditionOperator::isNull,
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::const, ''),
             ConditionOperator::isNull,
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
 
         self::assertTrue((new Condition(
             new ConditionElement(ConditionElementType::var, 'field', 'test'),
             ConditionOperator::isNull,
-        ))->validateCondition([
+        ))->validateCondition(new RecordCollection([
             'test' => new Record('test', 0, ['field' => null])
-        ]));
+        ])));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::var, 'field', 'test'),
             ConditionOperator::isNull,
-        ))->validateCondition([
+        ))->validateCondition(new RecordCollection([
             'test' => new Record('test', 0, ['field' => 0]),
-        ]));
+        ])));
 
     }
 
@@ -285,29 +286,29 @@ class ConditionTest extends TestCase
             new ConditionElement(ConditionElementType::const, '%bonjour%'),
             ConditionOperator::regex,
             new ConditionElement(ConditionElementType::const, '%[a-z]*%'),
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::const, '%bonjour'),
             ConditionOperator::regex,
             new ConditionElement(ConditionElementType::const, '%[a-z]*%'),
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertTrue((new Condition(
             new ConditionElement(ConditionElementType::var, 'field', 'test'),
             ConditionOperator::regex,
             new ConditionElement(ConditionElementType::const,'%[a-z]*%')
-        ))->validateCondition([
+        ))->validateCondition(new RecordCollection([
             'test' => new Record('test', 0, ['field' => '%bonjour%']),
-        ]));
+        ])));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::var, 'field', 'test'),
             ConditionOperator::regex,
             new ConditionElement(ConditionElementType::const,  '%[a-z]*%')
-        ))->validateCondition([
+        ))->validateCondition(new RecordCollection([
             'test' => new Record('test', 0, ['field' => '%bonjourA%']),
-        ]));
+        ])));
 
     }
 
@@ -317,38 +318,36 @@ class ConditionTest extends TestCase
         self::assertTrue((new Condition(
             new ConditionElement(ConditionElementType::const, ['%bonjour%']),
             ConditionOperator::exists,
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::const, []),
             ConditionOperator::exists,
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::const, null),
             ConditionOperator::exists,
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertTrue((new Condition(
             new ConditionElement(ConditionElementType::var, 'field', 'table'),
             ConditionOperator::exists,
-        ))->validateCondition([
-            'table' => new Record('table', 0, ['field' => ['val']])
-        ]));
+        ))->validateCondition(new RecordCollection([
+            'table' => new Record('table', 0, ['field' => 'val'])
+        ])));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::var, 'field', 'table'),
             ConditionOperator::exists,
-        ))->validateCondition([
-            'table' => new Record('table', 0, ['field' => []])
-        ]));
+        ))->validateCondition(new RecordCollection()));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::var, 'field', 'table'),
             ConditionOperator::exists,
-        ))->validateCondition([
+        ))->validateCondition(new RecordCollection([
             'table' => new Record('table', 0, ['field' => null])
-        ]));
+        ])));
 
     }
 
@@ -358,38 +357,38 @@ class ConditionTest extends TestCase
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::const, ['%bonjour%']),
             ConditionOperator::notExists,
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertTrue((new Condition(
             new ConditionElement(ConditionElementType::const, []),
             ConditionOperator::notExists,
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertTrue((new Condition(
             new ConditionElement(ConditionElementType::const, null),
             ConditionOperator::notExists,
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::var, 'field', 'table'),
             ConditionOperator::notExists,
-        ))->validateCondition([
-            'table' => new Record('table', 0, ['field' => ['val']])
-        ]));
+        ))->validateCondition(new RecordCollection([
+            'table' => new Record('table', 0, ['field' => 'val'])
+        ])));
 
         self::assertTrue((new Condition(
             new ConditionElement(ConditionElementType::var, 'field', 'table'),
             ConditionOperator::notExists,
-        ))->validateCondition([
-            'table' => new Record('table', 0, ['field' => []])
-        ]));
-
-        self::assertTrue((new Condition(
-            new ConditionElement(ConditionElementType::var, 'field', 'table'),
-            ConditionOperator::notExists,
-        ))->validateCondition([
+        ))->validateCondition(new RecordCollection([
             'table' => new Record('table', 0, ['field' => null])
-        ]));
+        ])));
+
+        self::assertTrue((new Condition(
+            new ConditionElement(ConditionElementType::var, 'field', 'table'),
+            ConditionOperator::notExists,
+        ))->validateCondition(new RecordCollection([
+            'table' => new Record('table', 0, ['field' => null])
+        ])));
 
     }
 
@@ -400,29 +399,29 @@ class ConditionTest extends TestCase
             new ConditionElement(ConditionElementType::const, 'test'),
             ConditionOperator::in,
             new ConditionElement(ConditionElementType::const, ['test', 'juice']),
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::const, 'testa'),
             ConditionOperator::in,
             new ConditionElement(ConditionElementType::const, ['test', 'juice']),
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertTrue((new Condition(
             new ConditionElement(ConditionElementType::var, 'field', 'test'),
             ConditionOperator::in,
             new ConditionElement(ConditionElementType::const, ['test', 'juice']),
-        ))->validateCondition([
+        ))->validateCondition(new RecordCollection([
             'test' => new Record('test', 0, ['field' => 'test'])
-        ]));
+        ])));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::var, 'field', 'test'),
             ConditionOperator::in,
             new ConditionElement(ConditionElementType::const, ['test', 'juice']),
-        ))->validateCondition([
+        ))->validateCondition(new RecordCollection([
             'test' => new Record('test', 0, ['field' => 'testa'])
-        ]));
+        ])));
 
     }
 
@@ -433,29 +432,29 @@ class ConditionTest extends TestCase
             new ConditionElement(ConditionElementType::const, 'test'),
             ConditionOperator::notIn,
             new ConditionElement(ConditionElementType::const, ['test', 'juice']),
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertTrue((new Condition(
             new ConditionElement(ConditionElementType::const, 'testa'),
             ConditionOperator::notIn,
             new ConditionElement(ConditionElementType::const, ['test', 'juice']),
-        ))->validateCondition([]));
+        ))->validateCondition(new RecordCollection([])));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::var, 'field', 'test'),
             ConditionOperator::notIn,
             new ConditionElement(ConditionElementType::const, ['test', 'juice']),
-        ))->validateCondition([
+        ))->validateCondition(new RecordCollection([
             'test' => new Record('test', 0, ['field' => 'test'])
-        ]));
+        ])));
 
         self::assertTrue((new Condition(
             new ConditionElement(ConditionElementType::var, 'field', 'test'),
             ConditionOperator::notIn,
             new ConditionElement(ConditionElementType::const, ['test', 'juice']),
-        ))->validateCondition([
+        ))->validateCondition(new RecordCollection([
             'test' => new Record('test', 0, ['field' => 'testa'])
-        ]));
+        ])));
 
     }
 
@@ -467,7 +466,7 @@ class ConditionTest extends TestCase
                 new ConditionElement(ConditionElementType::const, null),
                 ConditionOperator::isNull,
                 new ConditionElement(ConditionElementType::const, 0),
-            ))->validateCondition([]);
+            ))->validateCondition(new RecordCollection([]));
         } catch (\Exception $e) {
         }
         self::assertInstanceOf(SyntaxErrorException::class, $e);
@@ -478,7 +477,7 @@ class ConditionTest extends TestCase
                 new ConditionElement(ConditionElementType::const, null),
                 ConditionOperator::isNotNull,
                 new ConditionElement(ConditionElementType::const, 0),
-            ))->validateCondition([]);
+            ))->validateCondition(new RecordCollection([]));
         } catch (\Exception $e) {
         }
         self::assertInstanceOf(SyntaxErrorException::class, $e);
@@ -489,7 +488,7 @@ class ConditionTest extends TestCase
                 new ConditionElement(ConditionElementType::const, null),
                 ConditionOperator::exists,
                 new ConditionElement(ConditionElementType::const, 0),
-            ))->validateCondition([]);
+            ))->validateCondition(new RecordCollection([]));
         } catch (\Exception $e) {}
         self::assertInstanceOf(SyntaxErrorException::class, $e);
         unset($e);
@@ -499,7 +498,7 @@ class ConditionTest extends TestCase
                 new ConditionElement(ConditionElementType::const, null),
                 ConditionOperator::exists,
                 new ConditionElement(ConditionElementType::const, 0),
-            ))->validateCondition([]);
+            ))->validateCondition(new RecordCollection([]));
         } catch (\Exception $e) {}
         self::assertInstanceOf(SyntaxErrorException::class, $e);
         unset($e);
@@ -509,7 +508,7 @@ class ConditionTest extends TestCase
                 new ConditionElement(ConditionElementType::const, null),
                 ConditionOperator::notExists,
                 new ConditionElement(ConditionElementType::const, 0),
-            ))->validateCondition([]);
+            ))->validateCondition(new RecordCollection([]));
         } catch (\Exception $e) {}
         self::assertInstanceOf(SyntaxErrorException::class, $e);
         unset($e);
@@ -519,7 +518,7 @@ class ConditionTest extends TestCase
                 new ConditionElement(ConditionElementType::const, null),
                 ConditionOperator::in,
                 new ConditionElement(ConditionElementType::const, 0),
-            ))->validateCondition([]);
+            ))->validateCondition(new RecordCollection([]));
         } catch (\Exception $e) {}
         self::assertInstanceOf(SyntaxErrorException::class, $e);
         unset($e);
@@ -529,7 +528,7 @@ class ConditionTest extends TestCase
                 new ConditionElement(ConditionElementType::const, null),
                 ConditionOperator::notIn,
                 new ConditionElement(ConditionElementType::const, 0),
-            ))->validateCondition([]);
+            ))->validateCondition(new RecordCollection([]));
         } catch (\Exception $e) {}
         self::assertInstanceOf(SyntaxErrorException::class, $e);
         unset($e);
@@ -539,7 +538,7 @@ class ConditionTest extends TestCase
                 new ConditionElement(ConditionElementType::const, null),
                 ConditionOperator::notIn,
                 new ConditionElement(ConditionElementType::const, 0),
-            ))->validateCondition([]);
+            ))->validateCondition(new RecordCollection([]));
         } catch (\Exception $e) {}
         self::assertInstanceOf(SyntaxErrorException::class, $e);
         unset($e);

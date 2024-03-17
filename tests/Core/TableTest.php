@@ -49,9 +49,11 @@ class TableTest extends TestCase
         $table->addColumn(
             new Column('price', ColumnType::float)
         );
+
+        $table->addIndex(['name'], 10000, 256);
+        $table->addIndex(['price'], 10000, 256);
+
         $table->create();
-        $table->addIndex(['name']);
-        $table->addIndex(['price']);
 
         $name = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         foreach (range(1, 10000) as $value) {
@@ -64,6 +66,7 @@ class TableTest extends TestCase
             $total += $table->filterWithIndex([
                     new IndexFilter(Operator::equal, 'name', $name[$i])
                 ])->count();
+
         }
 
         self::assertEquals(10000, $total);

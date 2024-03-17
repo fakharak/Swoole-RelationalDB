@@ -7,9 +7,13 @@
 
 namespace Small\SwooleDb\Selector\Bean;
 
-use Small\SwooleDb\Core\Record;
-use Small\SwooleDb\Selector\Bean\Condition;
+use Small\SwooleDb\Core\Bean\IndexFilter;
+use Small\SwooleDb\Core\Enum\Operator;
+use Small\SwooleDb\Core\RecordCollection;
+use Small\SwooleDb\Registry\TableRegistry;
 use Small\SwooleDb\Selector\Enum\BracketOperator;
+use Small\SwooleDb\Selector\Enum\ConditionElementType;
+use Small\SwooleDb\Selector\Enum\ConditionOperator;
 use Small\SwooleDb\Selector\Exception\SyntaxErrorException;
 
 class Bracket
@@ -19,6 +23,22 @@ class Bracket
     protected array $conditions = [];
     /** @var BracketOperator[] */
     protected array $operators = [];
+
+    /**
+     * @return Bracket[]|Condition[]
+     */
+    public function getConditions(): array
+    {
+        return $this->conditions;
+    }
+
+    /**
+     * @return BracketOperator[]
+     */
+    public function getOperators(): array
+    {
+        return $this->operators;
+    }
 
     /**
      * Add condition to bracket as first condition
@@ -115,11 +135,11 @@ class Bracket
 
     /**
      * Validate conditions in bracket
-     * @param Record[] $records
+     * @param RecordCollection $records
      * @return bool
      * @throws SyntaxErrorException
      */
-    public function validateBracket(array $records): bool
+    public function validateBracket(RecordCollection $records): bool
     {
 
         if (count($this->conditions) == 0) {
@@ -130,7 +150,7 @@ class Bracket
         $conditionResults = [];
         foreach ($this->conditions as $condition) {
             if ($condition instanceof Condition) {
-                    $conditionResults[] = $condition->validateCondition($records);
+                $conditionResults[] = $condition->validateCondition($records);
             } elseif ($condition instanceof Bracket) {
                 $conditionResults[] = $condition->validateBracket($records);
             } else {
