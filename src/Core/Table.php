@@ -128,7 +128,7 @@ class Table implements \Iterator
 
     }
 
-    protected function formatValue(int|string $key, string $column, mixed $value): mixed
+    protected function formatValue(int|string $key, string $column, string|int|float|null $value): string|int|float|null
     {
 
         $isNull = $this->openswooleTable->get((string)$key, $column . '::null') == 1;
@@ -137,7 +137,13 @@ class Table implements \Iterator
         }
 
         if (in_array($this->getColumns()[$column]->getType(), [ColumnType::int, ColumnType::float])) {
+
             if ($this->openswooleTable->get($column . '::sign') == 1) {
+
+                if (!is_float($value) && !is_int($value)) {
+                    throw new \LogicException('Can\'t sign value');
+                }
+
                 $value = -$value;
             }
         }
@@ -147,8 +153,8 @@ class Table implements \Iterator
     }
 
     /**
-     * @param mixed[] $rawRecord
-     * @return mixed[]
+     * @param (int|float|string|null)[] $rawRecord
+     * @return (int|float|string|null)[]
      */
     protected function setMetasValues(array $rawRecord): array
     {
@@ -201,16 +207,23 @@ class Table implements \Iterator
     /**
      * @param int|string $key
      * @param string $column
-     * @return mixed
+     * @return string|int|float|Collection|null
      * @throws FieldValueIsNull
      */
-    public function get(int|string $key, string $column = ''): mixed
+    public function get(int|string $key, string $column = ''): string|int|float|Collection|null
     {
 
+        /** @var (int|float|string)[]|null $rawResult */
         $rawResult = $this->openswooleTable->get((string)$key);
 
         if ($column !== '') {
-            return $this->formatValue($key, $column, $rawResult);
+
+            if (!is_array($rawResult)) {
+                throw new \LogicException('Wrong type');
+            }
+
+            return $this->formatValue($key, $column, $rawResult[$column]);
+
         }
 
         if (!is_array($rawResult)) {
@@ -233,13 +246,13 @@ class Table implements \Iterator
 
         }
 
-        return $result;
+        return new Collection($result);
 
     }
 
     /**
      * @param string $key
-     * @param mixed[] $setValues
+     * @param (int|float|string|null)[] $setValues
      * @return bool
      */
     public function set(string $key, array $setValues): bool
@@ -268,7 +281,7 @@ class Table implements \Iterator
     }
 
     /**
-     * @param mixed[] $values
+     * @param (int|float|string|null)[] $values
      * @return $this
      * @throws FieldValueIsNull
      * @throws NotFoundException
@@ -321,11 +334,12 @@ class Table implements \Iterator
             throw new NotFoundException('Record not found');
         }
 
-        if (!is_array($array = $this->get((string)$key))) {
-            throw new \LogicException('$array must be array at this point');
+        $collection = $this->get($key);
+        if (!$collection instanceof Collection) {
+            throw new \LogicException('Wrong type');
         }
 
-        return new Record($this->getName(), $key, $array);
+        return new Record($this->getName(), $key, $collection);
 
     }
 
@@ -334,7 +348,7 @@ class Table implements \Iterator
      * @param string $key
      * @return bool
      */
-    public function exists(int|string $key): bool
+    public function exists(string $key): bool
     {
 
         return $this->openswooleTable->exists((string)$key);
@@ -355,7 +369,7 @@ class Table implements \Iterator
     {
 
         if ($toField != '_key') {
-            $this->addIndex([$toField]);
+            $this->addIndex([$toField], ForeignKey::INDEX_MAX_SIZE, Index::KEY_MAX_SIZE);
         }
 
         if (!isset($this->getColumns()[$fromField]) && $fromField != '_key') {
@@ -415,13 +429,20 @@ class Table implements \Iterator
 
     }
 
+    public function count(): int
+    {
+
+        return $this->openswooleTable->count();
+
+    }
+
     /**
      * Add an index
      * @param string[] $fields
      * @return $this
      * @throws IndexException
      */
-    public function addIndex(array $fields): self
+    public function addIndex(array $fields, int $indexMaxSize, int $indexDataMaxSize): self
     {
 
         if (count($fields) == 0) {
@@ -445,7 +466,11 @@ class Table implements \Iterator
 
         }
 
-        $index = $this->indexes[implode('|', $fields)] = new Index();
+        $index = $this->indexes[$name = implode('|', $fields)] = new Index(
+            $this->name . '_index_' . $name,
+            $indexMaxSize,
+            $indexDataMaxSize
+        );
 
         if ($this->created) {
             foreach ($this as $key => $record) {
@@ -655,7 +680,15 @@ class Table implements \Iterator
 
             $values = [];
             foreach (explode('|', $indexKey) as $field) {
-                $values[] = $this->get($key, $field);
+
+                $value = $this->get($key, $field);
+
+                if ($value instanceof Collection) {
+                    throw new \LogicException('Wrong type');
+                }
+
+                $values[] = $value;
+
             }
 
             $index->remove($key, $values);

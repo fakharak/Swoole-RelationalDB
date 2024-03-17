@@ -110,6 +110,11 @@ class ConditionElement
                 if (!is_string($this->value)) {
                     throw new WrongFormatException('Condition var must be identified by a string');
                 }
+
+                if (!$records->offsetExists($this->table ?? '')) {
+                    return null;
+                }
+
                 return $records[$this->table]->getValue($this->value);
 
         }

@@ -162,8 +162,8 @@ class TableSelectorTest extends TestCase
             new Column('price', ColumnType::float)
         );
 
-        $table->addIndex(['name']);
-        $table->addIndex(['price']);
+        $table->addIndex(['name'], 1000, 256);
+        $table->addIndex(['price'], 1000, 64);
 
         $table->create();
         foreach (range(1, 100) as $value) {
@@ -201,7 +201,7 @@ class TableSelectorTest extends TestCase
         $table->addColumn(new Column('name', ColumnType::string, 255));
         $table->addColumn(new Column('price', ColumnType::float));
 
-        $table->addIndex(['name']);
+        $table->addIndex(['name'], 5, 255);
 
         $table->create();
 
@@ -209,7 +209,7 @@ class TableSelectorTest extends TestCase
         $table2->addColumn(new Column('iterator', ColumnType::int, 32));
         $table2->addColumn(new Column('ownerId', ColumnType::string, 16));
 
-        $table2->addIndex(['iterator']);
+        $table2->addIndex(['iterator'], 1000, 32);
 
         $table2->create();
 

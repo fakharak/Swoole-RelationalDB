@@ -10,6 +10,7 @@ namespace Small\SwooleDb\Core;
 use Small\Collection\Collection\Collection;
 use Small\SwooleDb\Exception\DeleteFailException;
 use Small\SwooleDb\Exception\NotFoundException;
+use Small\SwooleDb\Exception\WrongFormatException;
 use Small\SwooleDb\Registry\TableRegistry;
 
 class Record implements \ArrayAccess
@@ -72,17 +73,25 @@ class Record implements \ArrayAccess
     /**
      * Get value of a field
      * @param string $fieldName
-     * @return mixed[]|float|int|string|null
+     * @return float|int|string|null
      * @throws NotFoundException
      */
-    public function getValue(string $fieldName): Collection|array|float|int|string|null
+    public function getValue(string $fieldName): float|int|string|null
     {
 
         if (!$this->data->offsetExists($fieldName)) {
             throw new NotFoundException('Field ' . $fieldName . ' not exists in record data');
         }
 
-        /** @phpstan-ignore-next-line */
+        if (
+            !is_int($this->data[$fieldName]) &&
+            !is_float($this->data[$fieldName]) &&
+            !is_string($this->data[$fieldName]) &&
+            !is_null($this->data[$fieldName])
+        ) {
+            throw new WrongFormatException('Field ' . $fieldName . ' has wrong type');
+        }
+
         return $this->data[$fieldName];
 
     }
@@ -90,11 +99,11 @@ class Record implements \ArrayAccess
     /**
      * Set value of a field
      * @param string $fieldName
-     * @param mixed $value
+     * @param string|int|float|null $value
      * @return $this
      * @throws NotFoundException
      */
-    public function setValue(string $fieldName, mixed $value): self
+    public function setValue(string $fieldName, string|int|float|null $value): self
     {
 
         if (!$this->data->offsetExists($fieldName)) {
@@ -118,7 +127,7 @@ class Record implements \ArrayAccess
 
     /**
      * Set data to array
-     * @param mixed[]|Collection $data
+     * @param string|int|float|null[]|Collection $data
      * @return $this
      * @phpstan-ignore-next-line
      */
@@ -175,7 +184,7 @@ class Record implements \ArrayAccess
     }
 
     /**
-     * @param int|string $offset
+     * @param string $offset
      * @return bool
      */
     #[\Override] public function offsetExists(mixed $offset): bool
@@ -183,16 +192,34 @@ class Record implements \ArrayAccess
         return $this->data->offsetExists($offset);
     }
 
+    /**
+     * @param string $offset
+     * @return string|int|float|null
+     */
     #[\Override] public function offsetGet(mixed $offset): mixed
     {
-        return $this->data->offsetGet($offset);
+
+        /** @var string|int|float|null $value */
+        $value = $this->data->offsetGet($offset);
+
+        return $value;
+
     }
 
+    /**
+     * @param string $offset
+     * @param string|int|float|null $value
+     * @return void
+     */
     #[\Override] public function offsetSet(mixed $offset, mixed $value): void
     {
         $this->data->offsetSet($offset, $value);
     }
 
+    /**
+     * @param string $offset
+     * @return void
+     */
     #[\Override] public function offsetUnset(mixed $offset): void
     {
         $this->data->offsetUnset($offset);

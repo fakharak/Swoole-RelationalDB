@@ -128,33 +128,38 @@ readonly class Condition
                 return !empty(preg_match('/^' . $right . '$/', $left));
 
             case ConditionOperator::exists:
+
                 if ($this->rightElement !== null) {
                     throw new SyntaxErrorException('Operator \'exists\' allow only null as right operator');
                 }
-                if ($this->leftElement->computeValue($records) == null) {
-                    return false;
+
+                $value = $this->leftElement->computeValue($records);
+                if (
+                    !is_array($value) &&
+                    !$value instanceof Collection
+                ) {
+                    return !empty($value);
                 }
-                return count((
-                    is_array($this->leftElement->computeValue($records)) ||
-                    $this->leftElement->computeValue($records) instanceof Collection
-                )
-                        ? $this->leftElement->computeValue($records)
-                        : []
-                    ) > 0;
+
+                return count($value) > 0;
+
             case ConditionOperator::notExists:
+
                 if ($this->rightElement !== null) {
                     throw new SyntaxErrorException('Operator \'exists\' allow only null as right operator');
                 }
-                if ($this->leftElement->computeValue($records) == null) {
-                    return true;
+
+                $value = $this->leftElement->computeValue($records);
+
+                if (
+                    !is_array($value) &&
+                    !$value instanceof Collection
+                ) {
+                    return empty($value);
                 }
-                return count((
-                        is_array($this->leftElement->computeValue($records)) ||
-                        $this->leftElement->computeValue($records) instanceof Collection
-                    )
-                        ? $this->leftElement->computeValue($records)
-                        : ['']
-                    ) == 0;
+
+                return count($value) == 0;
+
             case ConditionOperator::in:
                 if (!is_array($this->rightElement?->computeValue($records))) {
                     throw new SyntaxErrorException('Operator \'in\' allow only array as right operator');

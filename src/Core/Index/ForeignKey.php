@@ -127,8 +127,8 @@ class ForeignKey
 
     /**
      * Add to "from" index
-     * @param mixed $value
-     * @param mixed $foreignKey
+     * @param int|float|string|null $value
+     * @param int|float|string|null $foreignKey
      * @return $this
      * @throws \Small\SwooleDb\Exception\FieldValueIsNull
      */

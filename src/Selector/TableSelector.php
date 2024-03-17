@@ -92,7 +92,7 @@ class TableSelector
             }
         }
 
-        $createFilter = function (string $alias, int $key, string $field, mixed $value): IndexFilter|null {
+        $createFilter = function (string $alias, int $key, string $field, string|int|float|null $value): IndexFilter|null {
 
             if (!$this->where()->getConditions()[$key] instanceof Condition) {
                 throw new \LogicException('$key don\'t point on ' . Condition::class);
@@ -140,9 +140,13 @@ class TableSelector
                             throw new SyntaxErrorException('Field must be string');
                         }
 
-                        $filter = $createFilter($table, $key, $field, $value);
-                        if ($filter !== null) {
-                            $indexFilters[$table][] = $filter;
+                        if (!is_array($value)) {
+
+                            $filter = $createFilter($table, $key, $field, $value);
+                            if ($filter !== null) {
+                                $indexFilters[$table][] = $filter;
+                            }
+
                         }
 
                     }
@@ -159,9 +163,11 @@ class TableSelector
                             throw new SyntaxErrorException('Field must be string');
                         }
 
-                        $filter = $createFilter($table, $key, $field, $value);
-                        if ($filter !== null) {
-                            $indexFilters[$table][] = $filter;
+                        if (!is_array($value)) {
+                            $filter = $createFilter($table, $key, $field, $value);
+                            if ($filter !== null) {
+                                $indexFilters[$table][] = $filter;
+                            }
                         }
 
                     }

@@ -10,7 +10,7 @@ final readonly class IndexFilter
     public function __construct(
         public Operator $operator,
         public string $field,
-        public mixed $value,
+        public string|int|float|null $value,
     ) {}
 
 }

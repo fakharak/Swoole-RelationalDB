@@ -334,15 +334,13 @@ class ConditionTest extends TestCase
             new ConditionElement(ConditionElementType::var, 'field', 'table'),
             ConditionOperator::exists,
         ))->validateCondition(new RecordCollection([
-            'table' => new Record('table', 0, ['field' => ['val']])
+            'table' => new Record('table', 0, ['field' => 'val'])
         ])));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::var, 'field', 'table'),
             ConditionOperator::exists,
-        ))->validateCondition(new RecordCollection([
-            'table' => new Record('table', 0, ['field' => []])
-        ])));
+        ))->validateCondition(new RecordCollection()));
 
         self::assertFalse((new Condition(
             new ConditionElement(ConditionElementType::var, 'field', 'table'),
@@ -375,14 +373,14 @@ class ConditionTest extends TestCase
             new ConditionElement(ConditionElementType::var, 'field', 'table'),
             ConditionOperator::notExists,
         ))->validateCondition(new RecordCollection([
-            'table' => new Record('table', 0, ['field' => ['val']])
+            'table' => new Record('table', 0, ['field' => 'val'])
         ])));
 
         self::assertTrue((new Condition(
             new ConditionElement(ConditionElementType::var, 'field', 'table'),
             ConditionOperator::notExists,
         ))->validateCondition(new RecordCollection([
-            'table' => new Record('table', 0, ['field' => []])
+            'table' => new Record('table', 0, ['field' => null])
         ])));
 
         self::assertTrue((new Condition(

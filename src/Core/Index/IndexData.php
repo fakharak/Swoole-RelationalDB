@@ -8,8 +8,11 @@ class IndexData
     /** @var string[] */
     protected array $keys = [];
 
+    /**
+     * @param (int|float|string|null)[] $values
+     */
     public function __construct(
-        protected mixed $value,
+        protected array $values,
     ) {}
 
     public function addKey(string $key): self
@@ -30,10 +33,13 @@ class IndexData
 
     }
 
-    public function getValue(): mixed
+    /**
+     * @return (int|float|string|null)[]
+     */
+    public function getValues(): array
     {
 
-        return $this->value;
+        return $this->values;
 
     }
 
@@ -49,214 +55,109 @@ class IndexData
 
     /**
      * Return true if this value inferior of parameter value
-     * @param mixed $value
+     * @param (int|float|string|null)[] $values
      * @return bool
      */
-    public function inferior(mixed $value): bool
+    public function inferior(array $values): bool
     {
 
-        if (
-            (is_array($value) && !is_array($this->value)) ||
-            (!is_array($value) && is_array($this->value))
-        ) {
+       foreach ($values as $key => $item) {
 
-            throw new \LogicException('Can\t compare array with scalar');
-
-        }
-
-        if (is_array($value)) {
-
-            foreach ($value as $key => $item) {
-
-                if (!is_array($this->value)) {
-                    throw new \LogicException('Index value is not array');
-                }
-
-                if ($this->value[$key] > $item) {
-                    return false;
-                } else if ($this->value[$key] < $item){
-                    return true;
-                }
-
+            if ($this->values[$key] > $item) {
+                return false;
+            } else if ($this->values[$key] < $item){
+                return true;
             }
 
-            return false;
-
-        } else {
-
-            return $this->value < $value;
-
         }
+
+        return false;
 
     }
 
     /**
      * Return true if this value inferior or equal of parameter value
-     * @param mixed $value
+     * @param (int|float|string|null)[] $values
      * @return bool
      */
-    public function equal(mixed $value): bool
+    public function equal(array $values): bool
     {
 
-        if (
-            (is_array($value) && !is_array($this->value)) ||
-            (!is_array($value) && is_array($this->value))
-        ) {
+        foreach ($values as $key => $item) {
 
-            throw new \LogicException('Can\t compare array with scalar');
-
-        }
-
-        if (is_array($value)) {
-
-            foreach ($value as $key => $item) {
-
-                if (!is_array($this->value)) {
-                    throw new \LogicException('Index value is not array');
-                }
-
-                if ($this->value[$key] != $item) {
-                    return false;
-                }
-
+            if ($this->values[$key] != $item) {
+                return false;
             }
 
-            return true;
-
-        } else {
-
-            return $this->value == $value;
-
         }
+
+        return true;
 
     }
 
     /**
      * Return true if this value inferior or equal of parameter value
-     * @param mixed $value
+     * @param (int|float|string|null)[] $values
      * @return bool
      */
-    public function inferiorOrEqual(mixed $value): bool
+    public function inferiorOrEqual(array $values): bool
     {
 
-        if (
-            (is_array($value) && !is_array($this->value)) ||
-            (!is_array($value) && is_array($this->value))
-        ) {
+        foreach ($values as $key => $item) {
 
-            throw new \LogicException('Can\t compare array with scalar');
-
-        }
-
-        if (is_array($value)) {
-
-            foreach ($value as $key => $item) {
-
-                if (!is_array($this->value)) {
-                    throw new \LogicException('Index value is not array');
-                }
-
-                if ($this->value[$key] > $item) {
-                    return false;
-                } else if ($this->value[$key] < $item) {
-                    return true;
-                }
-
+            if ($this->values[$key] > $item) {
+                return false;
+            } else if ($this->values[$key] < $item) {
+                return true;
             }
 
-            return true;
-
-        } else {
-
-            return $this->value <= $value;
-
         }
+
+        return true;
 
     }
 
     /**
      * Return true if this value superior of parameter value
-     * @param mixed $value
+     * @param (int|float|string|null)[] $values
      * @return bool
      */
-    public function superior(mixed $value): bool
+    public function superior(array $values): bool
     {
 
-        if (
-            (is_array($value) && !is_array($this->value)) ||
-            (!is_array($value) && is_array($this->value))
-        ) {
+        foreach ($values as $key => $item) {
 
-            throw new \LogicException('Can\t compare array with scalar');
-
-        }
-
-        if (is_array($value)) {
-
-            foreach ($value as $key => $item) {
-
-                if (!is_array($this->value)) {
-                    throw new \LogicException('Index value is not array');
-                }
-
-                if ($this->value[$key] < $item) {
-                    return false;
-                } else if ($this->value[$key] > $item){
-                    return true;
-                }
-
+            if ($this->values[$key] < $item) {
+                return false;
+            } else if ($this->values[$key] > $item) {
+                return true;
             }
 
-            return false;
-
-        } else {
-
-            return $this->value > $value;
-
         }
+
+        return false;
 
     }
 
     /**
      * Return true if this value superior or equal of parameter value
-     * @param mixed $value
+     * @param (int|float|string|null)[] $values
      * @return bool
      */
-    public function superiorOrEqual(mixed $value): bool
+    public function superiorOrEqual(array $values): bool
     {
 
-        if (
-            (is_array($value) && !is_array($this->value)) ||
-            (!is_array($value) && is_array($this->value))
-        ) {
+        foreach ($values as $key => $item) {
 
-            throw new \LogicException('Can\t compare array with scalar');
-
-        }
-
-        if (is_array($value)) {
-
-            foreach ($value as $key => $item) {
-
-                if (!is_array($this->value)) {
-                    throw new \LogicException('Index value is not array');
-                }
-
-                if ($this->value[$key] < $item) {
-                    return false;
-                } else if ($this->value[$key] > $item) {
-                    return true;
-                }
-
+            if ($this->values[$key] < $item) {
+                return false;
+            } else if ($this->values[$key] > $item) {
+                return true;
             }
 
-            return true;
-
-        } else {
-
-            return $this->value >= $value;
-
         }
+
+        return true;
 
     }
 

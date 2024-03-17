@@ -50,8 +50,8 @@ class TableTest extends TestCase
             new Column('price', ColumnType::float)
         );
 
-        $table->addIndex(['name']);
-        $table->addIndex(['price']);
+        $table->addIndex(['name'], 10000, 256);
+        $table->addIndex(['price'], 10000, 256);
 
         $table->create();
 
