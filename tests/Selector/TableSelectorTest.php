@@ -105,6 +105,49 @@ class TableSelectorTest extends TestCase
 
     }
 
+    public function testExecuteSingleTableLimit(): void
+    {
+
+        $table = TableRegistry::getInstance()->createTable('testSelectLimit', 102);
+        $table->addColumn(new Column('name', ColumnType::string, 255));
+        $table->addColumn(new Column('price', ColumnType::float));
+        $table->create();
+        $table->set(0, ['name' => 'john', 'price' => 12.5]);
+        for ($i = 0; $i < 101; $i++) {
+            $table->set($i + 1, ['name' => 'paul' . $i, 'price' => 34.9 + $i]);
+        }
+
+        $selector = new TableSelector('testSelectLimit');
+        $selector->where()
+            ->firstCondition(new Condition(
+                new ConditionElement(ConditionElementType::var, 'price', 'testSelectLimit'),
+                ConditionOperator::superior,
+                new ConditionElement(ConditionElementType::const, 15)
+            ));
+
+        $selector->addOrderBy(
+            new OrderByField(
+                'testSelectLimit',
+                Column::KEY_COL_NAME,
+            )
+        );
+
+        $page = 1;
+        $i = 0;
+        $records = $selector
+            ->limit(10, $pageSize = 10)
+            ->execute();
+
+        self::assertCount($pageSize, $records);
+
+        $i = 10;
+        foreach ($records as $record) {
+            self::assertEquals(34.9 + $i, $record['testSelectLimit']->getValue('price'));
+            $i++;
+        }
+
+    }
+
     public function testExecuteOrderByTwoTables(): void
     {
 

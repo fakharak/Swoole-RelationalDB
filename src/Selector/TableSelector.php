@@ -30,6 +30,8 @@ class TableSelector
 
     public int|null $page = null;
     public int|null $pageSize = null;
+    public int|null $offset = null;
+    public int|null $length = null;
 
     /** @var Join[] */
     protected array $joins = [];
@@ -130,6 +132,16 @@ class TableSelector
 
         $this->page = $page;
         $this->pageSize = $pageSize;
+
+        return $this;
+
+    }
+
+    public function limit(int $offset, int $length): self
+    {
+
+        $this->offset = $offset;
+        $this->length = $length;
 
         return $this;
 
@@ -363,10 +375,14 @@ class TableSelector
         }
 
         $result = new Resultset();
-        $from = null;
+        $from = $this->offset;
+        $length = null;
         $rowNum = 0;
         if ($this->pageSize !== null) {
             $from = $this->pageSize * ($this->page - 1);
+            $length = $this->pageSize;
+        } else if ($this->length !== null) {
+            $length = $this->length;
         }
         foreach ($populatedRecords as $record) {
 
@@ -378,7 +394,7 @@ class TableSelector
 
                     $result[] = $record;
 
-                    if ($this->pageSize !== null && $result->count() == $this->pageSize) {
+                    if ($length !== null && $result->count() == $length) {
                         break;
                     }
 
