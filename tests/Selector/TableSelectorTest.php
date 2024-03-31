@@ -19,6 +19,7 @@ use Small\SwooleDb\Selector\Bean\ConditionElement;
 use Small\SwooleDb\Selector\Bean\OrderByField;
 use Small\SwooleDb\Selector\Enum\ConditionElementType;
 use Small\SwooleDb\Selector\Enum\ConditionOperator;
+use Small\SwooleDb\Selector\Enum\OrderBySens;
 use Small\SwooleDb\Selector\TableSelector;
 use function _PHPStan_156ee64ba\React\Promise\Timer\timeout;
 use function _PHPStan_cc8d35ffb\Symfony\Component\String\b;
@@ -28,7 +29,7 @@ class TableSelectorTest extends TestCase
 
     public function testExecuteSingleTable(): void
     {
-echo 'signle';
+
         $table = TableRegistry::getInstance()->createTable('testSelect', 5);
         $table->addColumn(new Column('name', ColumnType::string, 255));
         $table->addColumn(new Column('price', ColumnType::float));
@@ -76,7 +77,6 @@ echo 'signle';
                 new ConditionElement(ConditionElementType::const, 15)
             ));
 
-        $t = microtime(true);
         $selector->addOrderBy(
             new OrderByField(
                 'testSelectPaginated',
@@ -102,6 +102,60 @@ echo 'signle';
             $page++;
 
         }
+
+    }
+
+    public function testExecuteOrderByTwoTables(): void
+    {
+
+        $table = TableRegistry::getInstance()->createTable('testSelectOrderBy1', 3);
+        $table->addColumn(new Column('name', ColumnType::string, 255));
+        $table->addColumn(new Column('price', ColumnType::int, 8));
+        $table->create();
+
+        $table2 = TableRegistry::getInstance()->createTable('testSelectOrderBy2', 4);
+        $table2->addColumn(new Column('name', ColumnType::string, 255));
+        $table2->addColumn(new Column('price', ColumnType::int, 8));
+        $table2->addColumn(new Column('managerKey', ColumnType::string, 8));
+
+        $table2->create();
+
+        $table2->addForeignKey('manager', 'testSelectOrderBy1', 'managerKey');
+
+        $table->set(0, ['name' => 'john', 'price' => 12]);
+        $table->set(1, ['name' => 'john2', 'price' => 11]);
+        $table->set(2, ['name' => 'john3', 'price' => 10]);
+
+        $table2->set(0, ['name' => 'doe', 'price' => 13, 'managerKey' => '1']);
+        $table2->set(1, ['name' => 'doe2', 'price' => 12, 'managerKey' => '1']);
+        $table2->set(2, ['name' => 'doe3', 'price' => 10, 'managerKey' => '0']);
+        $table2->set(3, ['name' => 'doe4', 'price' => 10, 'managerKey' => '2']);
+
+        $records = (new TableSelector('testSelectOrderBy2'))
+            ->join('testSelectOrderBy2', 'manager')
+            ->addOrderBy(
+                new OrderByField(
+                    'testSelectOrderBy2',
+                    'price',
+                    OrderBySens::descending,
+                )
+            )->addOrderBy(
+                new OrderByField(
+                    'manager',
+                    'price',
+                )
+            )->execute()
+        ;
+
+        self::assertCount(4, $records);
+        self::assertEquals('john2', $records[0]['manager']->getValue('name'));
+        self::assertEquals('doe', $records[0]['testSelectOrderBy2']->getValue('name'));
+        self::assertEquals('john2', $records[1]['manager']->getValue('name'));
+        self::assertEquals('doe2', $records[1]['testSelectOrderBy2']->getValue('name'));
+        self::assertEquals('john3', $records[2]['manager']->getValue('name'));
+        self::assertEquals('doe4', $records[2]['testSelectOrderBy2']->getValue('name'));
+        self::assertEquals('john', $records[3]['manager']->getValue('name'));
+        self::assertEquals('doe3', $records[3]['testSelectOrderBy2']->getValue('name'));
 
     }
 

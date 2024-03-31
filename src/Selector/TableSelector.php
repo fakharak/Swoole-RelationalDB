@@ -284,7 +284,7 @@ class TableSelector
     {
 
         if ($alias === null) {
-            $alias = $from;
+            $alias = $foreignKeyName;
         }
 
         if (array_key_exists($alias, $this->joins)) {
@@ -359,7 +359,6 @@ class TableSelector
         }
 
         if ($this->orderBy->count() > 0) {
-            echo '1';
             $populatedRecords->orderBy($this->orderBy);
         }
 
