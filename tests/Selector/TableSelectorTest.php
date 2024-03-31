@@ -16,6 +16,7 @@ use Small\SwooleDb\Core\Table;
 use Small\SwooleDb\Registry\TableRegistry;
 use Small\SwooleDb\Selector\Bean\Condition;
 use Small\SwooleDb\Selector\Bean\ConditionElement;
+use Small\SwooleDb\Selector\Bean\OrderByField;
 use Small\SwooleDb\Selector\Enum\ConditionElementType;
 use Small\SwooleDb\Selector\Enum\ConditionOperator;
 use Small\SwooleDb\Selector\TableSelector;
@@ -25,9 +26,9 @@ use function _PHPStan_cc8d35ffb\Symfony\Component\String\b;
 class TableSelectorTest extends TestCase
 {
 
-    public function estExecuteSingleTable(): void
+    public function testExecuteSingleTable(): void
     {
-
+echo 'signle';
         $table = TableRegistry::getInstance()->createTable('testSelect', 5);
         $table->addColumn(new Column('name', ColumnType::string, 255));
         $table->addColumn(new Column('price', ColumnType::float));
@@ -52,6 +53,55 @@ class TableSelectorTest extends TestCase
 
         self::assertCount(1, $records);
         $this->assertTestSelectResult(1, $records[0]['testSelect']);
+
+    }
+
+    public function testExecuteSingleTablePaginated(): void
+    {
+
+        $table = TableRegistry::getInstance()->createTable('testSelectPaginated', 102);
+        $table->addColumn(new Column('name', ColumnType::string, 255));
+        $table->addColumn(new Column('price', ColumnType::float));
+        $table->create();
+        $table->set(0, ['name' => 'john', 'price' => 12.5]);
+        for ($i = 0; $i < 101; $i++) {
+            $table->set($i + 1, ['name' => 'paul' . $i, 'price' => 34.9 + $i]);
+        }
+
+        $selector = new TableSelector('testSelectPaginated');
+        $selector->where()
+            ->firstCondition(new Condition(
+                new ConditionElement(ConditionElementType::var, 'price', 'testSelectPaginated'),
+                ConditionOperator::superior,
+                new ConditionElement(ConditionElementType::const, 15)
+            ));
+
+        $t = microtime(true);
+        $selector->addOrderBy(
+            new OrderByField(
+                'testSelectPaginated',
+                Column::KEY_COL_NAME,
+            )
+        );
+
+        $page = 1;
+        $i = 0;
+        while(($records = $selector->paginate($page, $pageSize = 10)->execute())->count() > 0) {
+
+            if ($page <= 10) {
+                self::assertCount($pageSize, $records);
+            } else {
+                self::assertCount(1, $records);
+            }
+
+            foreach ($records as $record) {
+                self::assertEquals(34.9 + $i, $record['testSelectPaginated']->getValue('price'));
+                $i++;
+            }
+
+            $page++;
+
+        }
 
     }
 

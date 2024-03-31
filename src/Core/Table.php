@@ -118,6 +118,13 @@ class Table implements \Iterator
 
     }
 
+    public function hasColumn(string $column): bool
+    {
+
+        return key_exists($column, $this->columns);
+
+    }
+
     /**
      * @return Column[]
      */
@@ -292,7 +299,7 @@ class Table implements \Iterator
 
         foreach ($this->foreignKeys as $name => $foreignKey) {
 
-            if ($foreignKey->getFromField() != '_key' && $foreignKey->getToField() == '_key') {
+            if ($foreignKey->getFromField() != Column::KEY_COL_NAME && $foreignKey->getToField() == '_key') {
 
                 $foreignKey->addToForeignIndex(
                     $values[$foreignKey->getFromField()],
@@ -305,7 +312,7 @@ class Table implements \Iterator
                         $key
                     );
 
-            } else if ($foreignKey->getFromField() == '_key' && $foreignKey->getToField() == '_key') {
+            } else if ($foreignKey->getFromField() == Column::KEY_COL_NAME && $foreignKey->getToField() == '_key') {
 
                 $foreignKey->addToForeignIndex($key, $key);
 
@@ -365,20 +372,20 @@ class Table implements \Iterator
      * @throws NotFoundException
      * @throws \Small\SwooleDb\Exception\TableNotExists
      */
-    public function addForeignKey(string $name, string $toTableName, string $fromField, string $toField = '_key'): self
+    public function addForeignKey(string $name, string $toTableName, string $fromField, string $toField = Column::KEY_COL_NAME): self
     {
 
-        if ($toField != '_key') {
+        if ($toField != Column::KEY_COL_NAME) {
             $this->addIndex([$toField], ForeignKey::INDEX_MAX_SIZE, Index::KEY_MAX_SIZE);
         }
 
-        if (!isset($this->getColumns()[$fromField]) && $fromField != '_key') {
+        if (!isset($this->getColumns()[$fromField]) && $fromField != Column::KEY_COL_NAME) {
             throw new NotFoundException('Field \'' . $fromField . '\' not exists in table \'' . $this->getName() . '\' on foreign key creation');
         }
 
         $toTable = TableRegistry::getInstance()->getTable($toTableName);
 
-        if (!isset($toTable->getColumns()[$toField]) && $toField != '_key') {
+        if (!isset($toTable->getColumns()[$toField]) && $toField != Column::KEY_COL_NAME) {
             throw new NotFoundException('Field \'' . $toField . '\' not exists in table \'' . $toTable->getName() . '\' on foreign key creation');
         }
 
@@ -394,8 +401,8 @@ class Table implements \Iterator
 
                 foreach ($toTable as $toKey => $toRecord) {
 
-                    $fromValue = $fromField == '_key' ? $fromKey : $fromRecord->getValue($fromField);
-                    $toValue = $toField == '_key' ? $toKey : $toRecord->getValue($toField);
+                    $fromValue = $fromField == Column::KEY_COL_NAME ? $fromKey : $fromRecord->getValue($fromField);
+                    $toValue = $toField == Column::KEY_COL_NAME ? $toKey : $toRecord->getValue($toField);
 
                     if ($fromValue == $toValue) {
                         $foreignKey->addToForeignIndex($fromValue, $toKey);

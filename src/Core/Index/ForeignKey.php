@@ -164,7 +164,7 @@ class ForeignKey
     public function getForeignRecords(Record $record, string $alias = null): Resultset
     {
 
-        $value = $this->fromField == '_key' ? $record->getKey() : $record->getValue($this->fromField);
+        $value = $this->fromField == Column::KEY_COL_NAME ? $record->getKey() : $record->getValue($this->fromField);
         $resultset = new Resultset();
         for ($i = 0; $i < self::INDEX_MAX_SIZE; $i++) {
             if ($this->foreignIndex->exists($value . '_' . $i)) {

@@ -18,12 +18,16 @@ RUN docker-php-ext-install gd
 # install bcmath for msall-collection
 RUN docker-php-ext-install bcmath
 
+# No memory limit
+RUN echo "memory_limit = -1" > /usr/local/etc/php/conf.d/memory.ini
+
 # install composer
 RUN apt-get update && \
     apt-get install -y git zip
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
 RUN php composer-setup.php --install-dir=/usr/bin --filename=composer
 RUN chmod 755 /usr/bin/composer
+RUN export COMPOSER_PROCESS_TIMEOUT=-1
 
 # usual packages
 RUN apt-get update && apt-get install -y procps

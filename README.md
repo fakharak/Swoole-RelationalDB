@@ -178,6 +178,8 @@ You can use *where* to add conditions :
 
 ```php
 use Small\SwooleDb\Selector\TableSelector;
+use Small\SwooleDb\Selector\Enum\ConditionElementType;
+use Small\SwooleDb\Selector\Enum\ConditionOperator;
 
 $selector = new TableSelector('testSelect');
 $selector->where()
@@ -203,6 +205,40 @@ $result = (new TableSelector('user'))
 
 foreach ($result as $record) {
     echo $record['message']->getValue('body') . ' : by ' . $record['user']->getValue('name');
+}
+```
+
+And select any of fields (note that you can change record and persist easily) :
+```php
+use Small\SwooleDb\Selector\TableSelector;
+use Small\SwooleDb\Selector\Enum\ConditionElementType;
+use Small\SwooleDb\Selector\Enum\ConditionOperator;
+
+$selector = (new TableSelector('user'))
+    ->join('post', 'messageOwner', 'message')
+;
+
+$selector->where()
+    ->firstCondition(new Condition(
+        new ConditionElement(ConditionElementType::var, 'name', 'user'),
+        ConditionOperator::equal,
+        new ConditionElement(ConditionElementType::const, 'john')
+    ))->andCondition(new Condition(
+        new ConditionElement(ConditionElementType::var, 'subject', 'message'),
+        ConditionOperator::like,
+        new ConditionElement(ConditionElementType::const, '%hiring%')
+    ))
+;
+
+$result = $selector->execute();
+
+foreach ($result as $record) {
+    echo $record['message']->getValue('body') . ' : by ' . $record['user']->getValue('name');
+    
+    $record['message']
+        ->setValue('read', 1)
+        ->persist()
+    ;
 }
 ```
 

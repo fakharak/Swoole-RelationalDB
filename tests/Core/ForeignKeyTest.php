@@ -22,6 +22,7 @@ class ForeignKeyTest extends TestCase
 
         $userTable = TableRegistry::getInstance()->createTable('user', 255);
         $userTable->addColumn(new Column('name', ColumnType::string, 255));
+        $userTable->addIndex(['name'], 1000, 256);
         $userTable->create();
         (new Record('user', 0, ['name' => 'john']))->persist();
         (new Record('user', 1, ['name' => 'paul']))->persist();

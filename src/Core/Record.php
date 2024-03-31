@@ -63,9 +63,9 @@ class Record implements \ArrayAccess
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getKey(): mixed
+    public function getKey(): string
     {
         return $this->key;
     }
