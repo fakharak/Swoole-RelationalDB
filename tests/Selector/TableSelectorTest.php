@@ -60,7 +60,7 @@ class TableSelectorTest extends TestCase
     public function testExecuteSingleTablePaginated(): void
     {
 
-        $table = TableRegistry::getInstance()->createTable('testSelectPaginated', 102);
+        $table = TableRegistry::getInstance()->createTable('testSelectPaginated', 200);
         $table->addColumn(new Column('name', ColumnType::string, 255));
         $table->addColumn(new Column('price', ColumnType::float));
         $table->create();
