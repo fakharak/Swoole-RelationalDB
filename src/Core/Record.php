@@ -65,9 +65,11 @@ class Record implements \ArrayAccess
     /**
      * @return string
      */
-    public function getKey(): string
+    public function getKey(): string|null
     {
+
         return $this->key;
+
     }
 
     /**
@@ -176,6 +178,11 @@ class Record implements \ArrayAccess
      */
     public function delete(): self
     {
+
+        if ($this->key === null) {
+            throw new DeleteFailException('Key not set');
+        }
+
         if (!$this->getTable()->del($this->key)) {
             throw new DeleteFailException('Fail to delete record #' . $this->key);
         }

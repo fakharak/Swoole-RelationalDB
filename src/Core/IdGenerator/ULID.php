@@ -23,10 +23,10 @@ class ULID implements IdGeneratorInterface
         $time = microtime(true) * 1000;
         $timeBits = str_pad(
             base_convert(
-                floor($time),
+                (string)floor($time),
                 10,
                 32
-            ), self::TIME_BITS / 5,
+            ), (int)floor(self::TIME_BITS / 5),
             '0',
             STR_PAD_LEFT
         );

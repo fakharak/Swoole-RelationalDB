@@ -56,8 +56,12 @@ class Table implements \Iterator
 
     }
 
-    public function uniqueId(IdGeneratorInterface $idGenerator)
+    public function uniqueId(IdGeneratorInterface $idGenerator): self
     {
+
+        $this->idGenerator = $idGenerator;
+
+        return $this;
 
     }
 
@@ -268,7 +272,7 @@ class Table implements \Iterator
 
     /**
      * @param string|null $key
-     * @param array $setValues
+     * @param (string|int|float|null)[] $setValues
      * @return bool
      * @throws FieldValueIsNull
      * @throws NotFoundException
@@ -286,7 +290,7 @@ class Table implements \Iterator
 
             do {
                 $key = $this->idGenerator->generate();
-            } while ($this[$key] !== null);
+            } while ($this->exists($key));
 
         }
 
