@@ -26,7 +26,7 @@ class Record implements \ArrayAccess
      */
     public function __construct(
         protected string $tableName,
-        protected string $key,
+        protected string|null $key,
         array|Collection $data,
     ) {
 

@@ -13,6 +13,7 @@ if (!\class_exists('\OpenSwoole\Table')) {
 
 use Small\Collection\Collection\Collection;
 use Small\SwooleDb\Core\Bean\IndexFilter;
+use Small\SwooleDb\Core\Contract\IdGeneratorInterface;
 use Small\SwooleDb\Core\Enum\ColumnType;
 use Small\SwooleDb\Core\Enum\ForeignKeyType;
 use Small\SwooleDb\Core\Enum\Operator;
@@ -23,6 +24,7 @@ use Small\SwooleDb\Exception\ForbiddenActionException;
 use Small\SwooleDb\Exception\IndexException;
 use Small\SwooleDb\Exception\NotFoundException;
 use Small\SwooleDb\Registry\TableRegistry;
+use Small\SwooleDb\Selector\Exception\SyntaxErrorException;
 
 class Table implements \Iterator
 {
@@ -42,6 +44,8 @@ class Table implements \Iterator
 
     protected bool $created = false;
 
+    protected IdGeneratorInterface|null $idGenerator = null;
+
     public function __construct(
         protected string $name,
         private int $maxSize,
@@ -49,6 +53,11 @@ class Table implements \Iterator
     ) {
 
         $this->openswooleTable = new \OpenSwoole\Table($this->maxSize, $conflict_proportion);
+
+    }
+
+    public function uniqueId(IdGeneratorInterface $idGenerator)
+    {
 
     }
 
@@ -258,12 +267,28 @@ class Table implements \Iterator
     }
 
     /**
-     * @param string $key
-     * @param (int|float|string|null)[] $setValues
+     * @param string|null $key
+     * @param array $setValues
      * @return bool
+     * @throws FieldValueIsNull
+     * @throws NotFoundException
+     * @throws SyntaxErrorException
+     * @throws \Small\SwooleDb\Exception\TableNotExists
      */
-    public function set(string $key, array $setValues): bool
+    public function set(string|null $key, array $setValues): bool
     {
+
+        if ($key === null) {
+
+            if ($this->idGenerator === null) {
+                throw new SyntaxErrorException('key at null without a generator');
+            }
+
+            do {
+                $key = $this->idGenerator->generate();
+            } while ($this[$key] !== null);
+
+        }
 
         $result = [];
         foreach ($setValues as $field => $item) {
