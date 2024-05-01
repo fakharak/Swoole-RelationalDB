@@ -166,7 +166,7 @@ class Record implements \ArrayAccess
      */
     public function persist(): self
     {
-        $this->getTable()->set($this->key, $this->data->toArray());
+        $this->key = $this->getTable()->set($this->key, $this->data->toArray());
 
         return $this;
     }
