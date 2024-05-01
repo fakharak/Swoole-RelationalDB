@@ -11,6 +11,7 @@ use PHPUnit\Framework\TestCase;
 use SebastianBergmann\CodeCoverage\Driver\Selector;
 use Small\SwooleDb\Core\Column;
 use Small\SwooleDb\Core\Enum\ColumnType;
+use Small\SwooleDb\Core\IdGenerator\ULID;
 use Small\SwooleDb\Core\Record;
 use Small\SwooleDb\Core\Table;
 use Small\SwooleDb\Registry\TableRegistry;
@@ -34,8 +35,8 @@ class TableSelectorTest extends TestCase
         $table->addColumn(new Column('name', ColumnType::string, 255));
         $table->addColumn(new Column('price', ColumnType::float));
         $table->create();
-        $table->set(0, ['name' => 'john', 'price' => 12.5]);
-        $table->set(1, ['name' => 'paul', 'price' => 34.9]);
+        $key = 0; $table->set($key, ['name' => 'john', 'price' => 12.5]);
+        $key = 1; $table->set($key, ['name' => 'paul', 'price' => 34.9]);
 
         $selector = new TableSelector('testSelect');
         $records = $selector->execute();
@@ -64,9 +65,9 @@ class TableSelectorTest extends TestCase
         $table->addColumn(new Column('name', ColumnType::string, 255));
         $table->addColumn(new Column('price', ColumnType::float));
         $table->create();
-        $table->set(0, ['name' => 'john', 'price' => 12.5]);
+        $key = 0; $table->set($key, ['name' => 'john', 'price' => 12.5]);
         for ($i = 0; $i < 101; $i++) {
-            $table->set($i + 1, ['name' => 'paul' . $i, 'price' => 34.9 + $i]);
+            $key = $i + 1; $table->set($key, ['name' => 'paul' . $i, 'price' => 34.9 + $i]);
         }
 
         $selector = new TableSelector('testSelectPaginated');
@@ -114,7 +115,7 @@ class TableSelectorTest extends TestCase
         $table->create();
         $table->set(0, ['name' => 'john', 'price' => 12.5]);
         for ($i = 0; $i < 101; $i++) {
-            $table->set($i + 1, ['name' => 'paul' . $i, 'price' => 34.9 + $i]);
+            $key = $i + 1; $table->set($key, ['name' => 'paul' . $i, 'price' => 34.9 + $i]);
         }
 
         $selector = new TableSelector('testSelectLimit');
@@ -154,25 +155,26 @@ class TableSelectorTest extends TestCase
         $table = TableRegistry::getInstance()->createTable('testSelectOrderBy1', 3);
         $table->addColumn(new Column('name', ColumnType::string, 255));
         $table->addColumn(new Column('price', ColumnType::int, 8));
+        $table->uniqueId(new ULID());
         $table->create();
 
         $table2 = TableRegistry::getInstance()->createTable('testSelectOrderBy2', 4);
         $table2->addColumn(new Column('name', ColumnType::string, 255));
         $table2->addColumn(new Column('price', ColumnType::int, 8));
-        $table2->addColumn(new Column('managerKey', ColumnType::string, 8));
-
+        $table2->addColumn(new Column('managerKey', ColumnType::string, 25));
+        $table2->uniqueId(new ULID());
         $table2->create();
 
         $table2->addForeignKey('manager', 'testSelectOrderBy1', 'managerKey');
 
-        $table->set(0, ['name' => 'john', 'price' => 12]);
-        $table->set(1, ['name' => 'john2', 'price' => 11]);
-        $table->set(2, ['name' => 'john3', 'price' => 10]);
+        $key1 = $table->set(null, ['name' => 'john', 'price' => 12]);
+        $key2 = $table->set(null, ['name' => 'john2', 'price' => 11]);
+        $key3 = $table->set(null, ['name' => 'john3', 'price' => 10]);
 
-        $table2->set(0, ['name' => 'doe', 'price' => 13, 'managerKey' => '1']);
-        $table2->set(1, ['name' => 'doe2', 'price' => 12, 'managerKey' => '1']);
-        $table2->set(2, ['name' => 'doe3', 'price' => 10, 'managerKey' => '0']);
-        $table2->set(3, ['name' => 'doe4', 'price' => 10, 'managerKey' => '2']);
+        $table2->set(null, ['name' => 'doe', 'price' => 13, 'managerKey' => $key2]);
+        $table2->set(null, ['name' => 'doe2', 'price' => 12, 'managerKey' => $key2]);
+        $table2->set(null, ['name' => 'doe3',  'price' => 10, 'managerKey' => $key1]);
+        $table2->set(null, ['name' => 'doe4', 'price' => 10, 'managerKey' => $key3]);
 
         $records = (new TableSelector('testSelectOrderBy2'))
             ->join('testSelectOrderBy2', 'manager')

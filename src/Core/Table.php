@@ -273,13 +273,13 @@ class Table implements \Iterator
     /**
      * @param string|null $key
      * @param (string|int|float|null)[] $setValues
-     * @return bool
+     * @return string|null
      * @throws FieldValueIsNull
      * @throws NotFoundException
      * @throws SyntaxErrorException
      * @throws \Small\SwooleDb\Exception\TableNotExists
      */
-    public function set(string|null $key, array $setValues): bool
+    public function set(string|null $key, array $setValues): string|null
     {
 
         if ($key === null) {
@@ -312,7 +312,11 @@ class Table implements \Iterator
 
         $this->addToForeignKeys($key, $setValues);
 
-        return $this->openswooleTable->set($key, $this->setMetasValues($result));
+        if ($this->openswooleTable->set($key, $this->setMetasValues($result))) {
+            return $key;
+        } else {
+            return null;
+        }
 
     }
 

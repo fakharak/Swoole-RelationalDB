@@ -147,7 +147,8 @@ class ForeignKey
 
         }
 
-        $this->foreignIndex->set($value . '_' . $i, ['foreignKey' => $foreignKey, 'valid' => 1]);
+        $key = $value . '_' . $i;
+        $this->foreignIndex->set($key, ['foreignKey' => $foreignKey, 'valid' => 1]);
 
         return $this;
 

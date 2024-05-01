@@ -176,7 +176,8 @@ final class IndexNode implements \JsonSerializable
             throw new \LogicException('Bad data');
         }
 
-        $this->indexTable->set((string)$this->key, [
+        $key = (string)$this->key;
+        $this->indexTable->set($key, [
             'keyLeft' => $this->keyLeft,
             'keyRight' => $this->keyRight,
             'data' => $data,
