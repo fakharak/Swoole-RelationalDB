@@ -313,10 +313,12 @@ class TableSelector
 
     }
 
-    public function where(): Bracket
+    public function where(Bracket $bracket = null): Bracket
     {
 
-        if ($this->where === null) {
+        if ($bracket != null) {
+            $this->where = $bracket;
+        } else if ($this->where === null) {
             $this->where = new Bracket();
         }
 
