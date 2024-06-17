@@ -15,8 +15,11 @@ docker exec -it small-swoole-db-swoole composer unit-tests
 # Publish only on master branch
 if [ "$(git status | grep "On branch" | cut -c11-16)" != "main" ]
 then
+  if [ "$(git status | grep "Sur la branche" | cut -c11-16)" != "main" ]
+  then
     printf "\e[31mYou can tag and publish only on main !!!\e[0m\n"
     exit 1
+  fi
 fi
 
 # Get old version
