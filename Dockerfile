@@ -3,6 +3,7 @@ FROM php:8.3-cli
 ARG uid
 ARG project
 
+RUN apt-get update && apt-get install -y libbrotli-dev
 RUN pecl install $project && docker-php-ext-enable $project
 
 RUN usermod -u $uid www-data

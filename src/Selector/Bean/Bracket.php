@@ -62,14 +62,18 @@ class Bracket
      * @return self
      * @throws SyntaxErrorException
      */
-    public function firstBracket(): self
+    public function firstBracket(Bracket $bracket = null): self
     {
 
         if (array_key_exists(0, $this->conditions)) {
             throw new SyntaxErrorException('Bracket as already hav a first condition');
         }
 
-        $this->conditions[] = $bracket = new Bracket();
+        if ($bracket === null) {
+            $bracket = new Bracket();
+        }
+
+        $this->conditions[] = $bracket;
 
         return $bracket;
 
@@ -94,11 +98,16 @@ class Bracket
      * Add and bracket
      * @return Bracket
      */
-    public function andBracket(): self
+    public function andBracket(Bracket $bracket = null): self
     {
 
         $this->operators[] = BracketOperator::and;
-        $this->conditions[] = $bracket = new Bracket();
+
+        if ($bracket === null) {
+            $bracket = new Bracket();
+        }
+
+        $this->conditions[] = $bracket;
 
         return $bracket;
 
@@ -123,12 +132,17 @@ class Bracket
      * Add or bracket
      * @return Bracket
      */
-    public function orBracket(): self
+    public function orBracket(Bracket $bracket = null): self
     {
 
         $this->operators[] = BracketOperator::or;
-        $this->conditions[] = $bracket = new Bracket();
 
+        if ($bracket === null) {
+            $bracket = new Bracket();
+        }
+
+        $this->conditions[] = $bracket;
+        
         return $bracket;
 
     }

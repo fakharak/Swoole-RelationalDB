@@ -2,7 +2,6 @@
 
 namespace Small\SwooleDb\Core\Index;
 
-use _PHPStan_cc8d35ffb\Symfony\Component\Console\Exception\LogicException;
 use Small\SwooleDb\Core\Enum\Operator;
 use Small\SwooleDb\Core\Index\Enum\IndexNodeFrom;
 use Small\SwooleDb\Core\Table;
@@ -122,14 +121,14 @@ final class IndexNode implements \JsonSerializable
         if (is_string($keyLeft) || is_int($keyLeft)) {
             $keyLeft = (int)$keyLeft;
         } else {
-            throw new LogicException('Bad type');
+            throw new \LogicException('Bad type');
         }
 
         $keyRight = $record->getValue('keyRight');
         if (is_string($keyRight) || is_int($keyRight)) {
             $keyRight = (int)$keyRight;
         } else {
-            throw new LogicException('Bad type');
+            throw new \LogicException('Bad type');
         }
 
         if (!is_string($rawData = $record->getValue('data'))) {
