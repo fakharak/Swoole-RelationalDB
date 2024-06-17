@@ -1,7 +1,7 @@
 <?php
 /*
  *  This file is a part of small-swoole-db
- *  Copyright 2023 - Sébastien Kus
+ *  Copyright 2024 - Sébastien Kus
  *  Under GNU GPL V3 licence
  */
 
@@ -169,6 +169,7 @@ class Record implements \ArrayAccess
         $this->key = $this->getTable()->set($this->key, $this->data->toArray());
 
         return $this;
+    
     }
 
     /**

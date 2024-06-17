@@ -5,8 +5,8 @@
 set -e
 
 # Build test containers
-docker-compose build
-docker-compose up -d
+docker compose build
+docker compose up -d
 
 # Launch tests
 docker exec -it small-swoole-db composer unit-tests

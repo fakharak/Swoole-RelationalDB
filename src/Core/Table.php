@@ -1,7 +1,7 @@
 <?php
 /*
  *  This file is a part of small-swoole-db
- *  Copyright 2023 - Sébastien Kus
+ *  Copyright 2024 - Sébastien Kus
  *  Under GNU GPL V3 licence
  */
 
@@ -212,10 +212,10 @@ class Table implements \Iterator
                     $array[$column] = (float)$value;
                     break;
                 case ColumnType::string:
-                    if (!is_string($value)) {
+                    if (!is_scalar($value)) {
                         throw new \LogicException('Impossible value for type (' . gettype($value) . ')');
                     }
-                    $array[$column] = $value;
+                    $array[$column] = (string)$value;
                     break;
             }
         }
