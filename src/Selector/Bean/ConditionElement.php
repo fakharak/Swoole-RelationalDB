@@ -114,7 +114,6 @@ class ConditionElement
                 if (!$records->offsetExists($this->table ?? '')) {
                     return null;
                 }
-
                 return $records[$this->table]->getValue($this->value);
 
         }

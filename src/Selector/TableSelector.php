@@ -24,6 +24,7 @@ use Small\SwooleDb\Selector\Enum\BracketOperator;
 use Small\SwooleDb\Selector\Enum\ConditionElementType;
 use Small\SwooleDb\Selector\Enum\ConditionOperator;
 use Small\SwooleDb\Selector\Exception\SyntaxErrorException;
+use Small\SwooleEntityManager\QueryBuilder\Exception\WhereNotDefinedException;
 
 class TableSelector
 {
@@ -42,7 +43,7 @@ class TableSelector
 
     public function __construct(
         protected string $from,
-        protected string|null $alias = null
+        protected string|null $alias = null,
     ) {
 
         $this->orderBy = new OrderByCollection();
@@ -303,11 +304,17 @@ class TableSelector
             throw new SyntaxErrorException('The join alias \'' . $alias . '\' already exists');
         }
 
-        if (!array_key_exists($from, $this->joins) && $from != $this->from) {
+        if ($fromIsJoin = !array_key_exists($from, $this->joins) && $fromIsFrom = ($from != $this->alias)) {
             throw new SyntaxErrorException('The join from alias \'' . $from . '\' does not exists');
         }
 
-        $this->joins[$from . '/' . $alias] = new Join($from, $foreignKeyName, $alias);
+        if ($fromIsJoin) {
+            $fromTable = $this->joins[$from];
+        } else {
+            $fromTable = $this->from;
+        }
+
+        $this->joins[$from . '/' . $alias] = new Join($fromTable, $foreignKeyName, $alias);
 
         return $this;
 
@@ -326,6 +333,17 @@ class TableSelector
 
     }
 
+    public function getWhere(): Bracket
+    {
+
+        if ($this->where === null) {
+            throw new WhereNotDefinedException('The where is not defined');
+        }
+
+        return $this->where;
+
+    }
+
     /**
      * Execute query
      * @return Resultset
@@ -336,8 +354,9 @@ class TableSelector
 
         $fromTable = TableRegistry::getInstance()->getTable($this->from);
 
-        if ($fromFilters = $this->getOptimisations()[$fromTable->getName()]) {
-            $records = $fromTable->filterWithIndex($fromFilters);
+        $optimisations = $this->getOptimisations();
+        if (array_key_exists($fromTable->getName(), $optimisations)) {
+            $records = $fromTable->filterWithIndex($optimisations[$fromTable->getName()]);
         } else {
             $records = $fromTable;
         }
@@ -355,6 +374,7 @@ class TableSelector
                     foreach ($populated as $item) {
 
                         $populatedWithJoin = new Resultset();
+
                         foreach ($join->get($item) as $itemJoined) {
                             $populatedWithJoin[] = $item->merge(new RecordCollection($itemJoined));
 
@@ -386,6 +406,7 @@ class TableSelector
         } else if ($this->length !== null) {
             $length = $this->length;
         }
+
         foreach ($populatedRecords as $record) {
 
             $record = $this->applyAliasesOnRecord($record);

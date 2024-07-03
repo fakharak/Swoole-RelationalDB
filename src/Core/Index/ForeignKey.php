@@ -165,11 +165,15 @@ class ForeignKey
     public function getForeignRecords(Record $record, string $alias = null): Resultset
     {
 
-        $value = $this->fromField == Column::KEY_COL_NAME ? $record->getKey() : $record->getValue($this->fromField);
+        $value = $record->getKey();
+
         $resultset = new Resultset();
         for ($i = 0; $i < self::INDEX_MAX_SIZE; $i++) {
+
             if ($this->foreignIndex->exists($value . '_' . $i)) {
+
                 $foreignKey = $this->foreignIndex->getRecord($value . '_' . $i);
+
                 if ($foreignKey->getValue('valid') == 1) {
                     $resultset[] = new RecordCollection([
                         $alias ?? $this->toTable =>
@@ -182,9 +186,11 @@ class ForeignKey
                         )
                     ]);
                 }
+
             } else {
                 break;
             }
+
         }
 
         return $resultset;

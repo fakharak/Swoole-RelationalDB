@@ -16,15 +16,20 @@ use Small\SwooleDb\Core\Bean\IndexFilter;
 use Small\SwooleDb\Core\Contract\IdGeneratorInterface;
 use Small\SwooleDb\Core\Enum\ColumnType;
 use Small\SwooleDb\Core\Enum\ForeignKeyType;
-use Small\SwooleDb\Core\Enum\Operator;
+use Small\SwooleDb\Selector\Enum\ConditionOperator;
 use Small\SwooleDb\Core\Index\ForeignKey;
 use Small\SwooleDb\Core\Index\Index;
 use Small\SwooleDb\Exception\FieldValueIsNull;
 use Small\SwooleDb\Exception\ForbiddenActionException;
 use Small\SwooleDb\Exception\IndexException;
 use Small\SwooleDb\Exception\NotFoundException;
+use Small\SwooleDb\Exception\UnknownForeignKeyException;
 use Small\SwooleDb\Registry\TableRegistry;
+use Small\SwooleDb\Selector\Bean\Condition;
+use Small\SwooleDb\Selector\Bean\ConditionElement;
+use Small\SwooleDb\Selector\Enum\ConditionElementType;
 use Small\SwooleDb\Selector\Exception\SyntaxErrorException;
+use Small\SwooleDb\Selector\TableSelector;
 
 class Table implements \Iterator
 {
@@ -296,7 +301,9 @@ class Table implements \Iterator
 
         $result = [];
         foreach ($setValues as $field => $item) {
-            $result[$field] = $item === null ? $this->getColumns()[$field]->getNullValue() : $item;
+            if (array_key_exists($field, $columns = $this->getColumns()) && $columns[$field] !== null) {
+                $result[$field] = $item === null ? $columns[$field]->getNullValue() : $item;
+            }
         }
 
         foreach ($this->indexes as $fieldsString => $index) {
@@ -332,20 +339,20 @@ class Table implements \Iterator
 
         foreach ($this->foreignKeys as $name => $foreignKey) {
 
-            if ($foreignKey->getFromField() != Column::KEY_COL_NAME && $foreignKey->getToField() == '_key') {
+            if ($foreignKey->getFromField() != Column::KEY_COL_NAME && $foreignKey->getToField() == Column::KEY_COL_NAME) {
 
                 $foreignKey->addToForeignIndex(
+                    $key,
                     $values[$foreignKey->getFromField()],
-                    $values[$foreignKey->getFromField()]
                 );
 
                 $foreignKey->getReflected()
                     ->addToForeignIndex(
                         $values[$foreignKey->getFromField()],
-                        $key
+                        $key,
                     );
 
-            } else if ($foreignKey->getFromField() == Column::KEY_COL_NAME && $foreignKey->getToField() == '_key') {
+            } else if ($foreignKey->getFromField() == Column::KEY_COL_NAME && $foreignKey->getToField() == Column::KEY_COL_NAME) {
 
                 $foreignKey->addToForeignIndex($key, $key);
 
@@ -453,7 +460,7 @@ class Table implements \Iterator
         $this->foreignKeys[$name] = $linkFn($foreignKey, $this, $toTable, $fromField, $toField);
 
         $foreignKeyReflection = new ForeignKey($name, $toTableName, $toField, $this->name, $fromField, ForeignKeyType::to);
-        $toTable->foreignKeys[$name] = $linkFn($foreignKeyReflection, $toTable, $this, $toField, $fromField);
+        $toTable->foreignKeys[$this->name . 's'] = $linkFn($foreignKeyReflection, $toTable, $this, $toField, $fromField);
 
         $foreignKey->setReflected($foreignKeyReflection);
         $foreignKeyReflection->setReflected($foreignKey);
@@ -464,6 +471,10 @@ class Table implements \Iterator
 
     public function getForeignTable(string $foreignKeyName): string
     {
+
+        if (!array_key_exists($foreignKeyName, $this->foreignKeys)) {
+            throw new UnknownForeignKeyException('Foreign key ' . $foreignKeyName . ' not found');
+        }
 
         return $this->foreignKeys[$foreignKeyName]->getToTableName();
 
@@ -664,7 +675,11 @@ class Table implements \Iterator
     public function getJoinedRecords(string $foreignKeyName, RecordCollection $from, string $alias = null): Resultset
     {
 
-        return $this->foreignKeys[$foreignKeyName]->getForeignRecords($from[$this->name], $alias);
+        if (!array_key_exists($alias, $this->foreignKeys)) {
+            throw new UnknownForeignKeyException('Foreign key ' . $alias . ' does not exist');
+        }
+
+        return $this->foreignKeys[$alias]->getForeignRecords($from[$this->name], $alias);
 
     }
 

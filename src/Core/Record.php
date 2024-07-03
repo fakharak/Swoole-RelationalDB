@@ -81,6 +81,10 @@ class Record implements \ArrayAccess
     public function getValue(string $fieldName): float|int|string|null
     {
 
+        if ($fieldName == '_key') {
+            return $this->getKey();
+        }
+
         if (!$this->data->offsetExists($fieldName)) {
             throw new NotFoundException('Field ' . $fieldName . ' not exists in record data');
         }
@@ -166,6 +170,7 @@ class Record implements \ArrayAccess
      */
     public function persist(): self
     {
+
         $this->key = $this->getTable()->set($this->key, $this->data->toArray());
 
         return $this;
