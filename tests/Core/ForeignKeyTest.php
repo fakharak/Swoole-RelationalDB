@@ -31,26 +31,25 @@ class ForeignKeyTest extends TestCase
         $projectTable = TableRegistry::getInstance()->createTable('project', 255);
         $projectTable->addColumn(new Column('name', ColumnType::string, 255));
         $projectTable->addColumn(new Column('ownerId', ColumnType::int, 16));
+        $projectTable->addForeignKey('projectOwner', 'user', 'ownerId');
         $projectTable->create();
         (new Record('project', 0, ['name' => 'zero', 'ownerId' => 0]))->persist();
         (new Record('project', 1, ['name' => 'star wars', 'ownerId' => 0]))->persist();
         (new Record('project', 2, ['name' => 'cynderella', 'ownerId' => 1]))->persist();
 
-        $projectTable->addForeignKey('projectOwner', 'user', 'ownerId');
-
         $record = $projectTable->getRecord(0);
-        $records = $projectTable->getJoinedRecords('projectOwner', new RecordCollection([$projectTable->getName() => $record]));
-        self::assertEquals('john', $records[0]['user']->getValue('name'));
+        $records = $projectTable->getJoinedRecords('projectOwner', new RecordCollection([$projectTable->getName() => $record]), 'projectOwner');
+        self::assertEquals('john', $records[0]['projectOwner']->getValue('name'));
         $record = $projectTable->getRecord(1);
-        $records = $projectTable->getJoinedRecords('projectOwner', new RecordCollection([$projectTable->getName() => $record]));
-        self::assertEquals('john', $records[0]['user']->getValue('name'));
+        $records = $projectTable->getJoinedRecords('projectOwner', new RecordCollection([$projectTable->getName() => $record]), 'projectOwner');
+        self::assertEquals('john', $records[0]['projectOwner']->getValue('name'));
         $record = $projectTable->getRecord(2);
-        $records = $projectTable->getJoinedRecords('projectOwner', new RecordCollection([$projectTable->getName() => $record]));
-        self::assertEquals('paul', $records[0]['user']->getValue('name'));
+        $records = $projectTable->getJoinedRecords('projectOwner', new RecordCollection([$projectTable->getName() => $record]), 'projectOwner');
+        self::assertEquals('paul', $records[0]['projectOwner']->getValue('name'));
 
         $record = $userTable->getRecord(0);
-        $records = $userTable->getJoinedRecords('projectOwner', new RecordCollection([$userTable->getName() => $record]));
-        self::assertEquals('star wars', $records[1]['project']->getValue('name'));
+        $records = $userTable->getJoinedRecords('projects', new RecordCollection([$userTable->getName() => $record]), 'projects');
+        self::assertEquals('star wars', $records[1]['projects']->getValue('name'));
 
     }
 

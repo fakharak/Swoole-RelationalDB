@@ -163,9 +163,8 @@ class TableSelectorTest extends TestCase
         $table2->addColumn(new Column('price', ColumnType::int, 8));
         $table2->addColumn(new Column('managerKey', ColumnType::string, 25));
         $table2->uniqueId(new ULID());
-        $table2->create();
-
         $table2->addForeignKey('manager', 'testSelectOrderBy1', 'managerKey');
+        $table2->create();
 
         $key1 = $table->set(null, ['name' => 'john', 'price' => 12]);
         $key2 = $table->set(null, ['name' => 'john2', 'price' => 11]);
@@ -228,7 +227,6 @@ class TableSelectorTest extends TestCase
         $table = TableRegistry::getInstance()->createTable('testSelectJoin', 5);
         $table->addColumn(new Column('name', ColumnType::string, 255));
         $table->addColumn(new Column('price', ColumnType::float));
-
         $table->create();
 
         $table->set(0, ['name' => 'john', 'price' => 12.5]);
@@ -237,17 +235,16 @@ class TableSelectorTest extends TestCase
         $table2 = TableRegistry::getInstance()->createTable('testSelectJoinPost', 5);
         $table2->addColumn(new Column('message', ColumnType::string, 255));
         $table2->addColumn(new Column('ownerId', ColumnType::string, 16));
-
+        $table2->addForeignKey('messageOwner', 'testSelectJoin', 'ownerId');
         $table2->create();
 
-        $table2->addForeignKey('messageOwner', 'testSelectJoin', 'ownerId');
 
         $table2->set(0, ['message' => 'ceci est un test', 'ownerId' => '0']);
         $table2->set(1, ['message' => 'ceci est un autre test', 'ownerId' => '1']);
         $table2->set(2, ['message' => 'ceci est une suite de test', 'ownerId' => '1']);
 
         $result = (new TableSelector('testSelectJoin', 'user'))
-            ->join('testSelectJoin', 'messageOwner', 'message')
+            ->join('user', 'testSelectJoinPosts', 'message')
             ->execute()
         ;
         self::assertCount(3, $result);
@@ -357,12 +354,9 @@ class TableSelectorTest extends TestCase
         $table2 = TableRegistry::getInstance()->createTable('testSelectJoinIterationsIndex', 1000);
         $table2->addColumn(new Column('iterator', ColumnType::int, 32));
         $table2->addColumn(new Column('ownerId', ColumnType::string, 16));
-
         $table2->addIndex(['iterator'], 1000, 32);
-
-        $table2->create();
-
         $table2->addForeignKey('owner', 'testSelectJoinIndex', 'ownerId');
+        $table2->create();
 
         $table->set('0', ['name' => 'john', 'price' => 5.25]);
         $table->set('1', ['name' => 'paul', 'price' => 12.75]);
@@ -372,7 +366,7 @@ class TableSelectorTest extends TestCase
         }
 
         ($query = new TableSelector('testSelectJoinIndex'))
-            ->join('testSelectJoinIndex', 'owner', 'iterations')
+            ->join('testSelectJoinIndex', 'testSelectJoinIterationsIndexs', 'iterations')
             ->where()
             ->firstCondition(
                 new Condition(

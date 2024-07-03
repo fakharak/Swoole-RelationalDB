@@ -43,7 +43,7 @@ class Join
     public function get(RecordCollection $fromRecord): Resultset
     {
 
-        return $this->from->getJoinedRecords($this->foreignKeyName, $fromRecord, $this->alias);
+        return $this->from->getJoinedRecords($this->foreignKeyName, $fromRecord, $this->foreignKeyName);
 
     }
 

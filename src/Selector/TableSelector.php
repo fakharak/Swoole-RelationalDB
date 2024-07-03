@@ -304,14 +304,14 @@ class TableSelector
             throw new SyntaxErrorException('The join alias \'' . $alias . '\' already exists');
         }
 
-        if ($fromIsJoin = !array_key_exists($from, $this->joins) && $fromIsFrom = ($from != $this->alias)) {
+        if (($fromIsJoin = !array_key_exists($from, $this->joins)) && !($fromIsFrom = ($from == $this->alias))) {
             throw new SyntaxErrorException('The join from alias \'' . $from . '\' does not exists');
         }
 
         if ($fromIsJoin) {
-            $fromTable = $this->joins[$from];
-        } else {
             $fromTable = $this->from;
+        } else {
+            $fromTable = $this->joins[$from]->getAlias();
         }
 
         $this->joins[$from . '/' . $alias] = new Join($fromTable, $foreignKeyName, $alias);
@@ -337,7 +337,7 @@ class TableSelector
     {
 
         if ($this->where === null) {
-            throw new WhereNotDefinedException('The where is not defined');
+            throw new SyntaxErrorException('The where is not defined');
         }
 
         return $this->where;

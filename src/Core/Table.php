@@ -16,6 +16,8 @@ use Small\SwooleDb\Core\Bean\IndexFilter;
 use Small\SwooleDb\Core\Contract\IdGeneratorInterface;
 use Small\SwooleDb\Core\Enum\ColumnType;
 use Small\SwooleDb\Core\Enum\ForeignKeyType;
+use Small\SwooleDb\Core\Enum\Operator;
+use Small\SwooleDb\Exception\MalformedTable;
 use Small\SwooleDb\Selector\Enum\ConditionOperator;
 use Small\SwooleDb\Core\Index\ForeignKey;
 use Small\SwooleDb\Core\Index\Index;
@@ -429,41 +431,15 @@ class Table implements \Iterator
             throw new NotFoundException('Field \'' . $toField . '\' not exists in table \'' . $toTable->getName() . '\' on foreign key creation');
         }
 
-        $linkFn = function (
-            ForeignKey $foreignKey,
-            self $fromTable,
-            self $toTable,
-            string $fromField,
-            string $toField,
-        ) {
-
-            foreach ($fromTable as $fromKey => $fromRecord) {
-
-                foreach ($toTable as $toKey => $toRecord) {
-
-                    $fromValue = $fromField == Column::KEY_COL_NAME ? $fromKey : $fromRecord->getValue($fromField);
-                    $toValue = $toField == Column::KEY_COL_NAME ? $toKey : $toRecord->getValue($toField);
-
-                    if ($fromValue == $toValue) {
-                        $foreignKey->addToForeignIndex($fromValue, $toKey);
-                    }
-
-                }
-
-            }
-
-            return $foreignKey;
-
-        };
-
         $foreignKey = new ForeignKey($name, $this->name, $fromField, $toTableName, $toField, ForeignKeyType::from);
-        $this->foreignKeys[$name] = $linkFn($foreignKey, $this, $toTable, $fromField, $toField);
 
         $foreignKeyReflection = new ForeignKey($name, $toTableName, $toField, $this->name, $fromField, ForeignKeyType::to);
-        $toTable->foreignKeys[$this->name . 's'] = $linkFn($foreignKeyReflection, $toTable, $this, $toField, $fromField);
 
         $foreignKey->setReflected($foreignKeyReflection);
         $foreignKeyReflection->setReflected($foreignKey);
+
+        $this->foreignKeys[$name] = $foreignKey;
+        $toTable->foreignKeys[$toField == Column::KEY_COL_NAME ? $this->getName() . 's' : $toField] = $foreignKeyReflection;
 
         return $this;
 
@@ -672,7 +648,7 @@ class Table implements \Iterator
      * @param RecordCollection $from
      * @return Resultset
      */
-    public function getJoinedRecords(string $foreignKeyName, RecordCollection $from, string $alias = null): Resultset
+    public function getJoinedRecords(string $foreignKeyName, RecordCollection $from, string $alias): Resultset
     {
 
         if (!array_key_exists($alias, $this->foreignKeys)) {
