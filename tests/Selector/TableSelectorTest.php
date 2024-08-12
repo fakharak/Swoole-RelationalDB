@@ -300,7 +300,7 @@ class TableSelectorTest extends TestCase
     public function testSelectOnIndex()
     {
 
-        $table = TableRegistry::getInstance()->createTable('testTableIndexSelector', 1000);
+        $table = TableRegistry::getInstance()->createTable('testTableIndexSelector', 101);
         $table->addColumn(
             new Column('name', ColumnType::string, 256)
         );
@@ -308,8 +308,8 @@ class TableSelectorTest extends TestCase
             new Column('price', ColumnType::float)
         );
 
-        $table->addIndex(['name'], 1000, 256);
-        $table->addIndex(['price'], 1000, 64);
+        $table->addIndex(['name'], 101, 256);
+        $table->addIndex(['price'], 101, 64);
 
         $table->create();
         foreach (range(1, 100) as $value) {
@@ -343,11 +343,11 @@ class TableSelectorTest extends TestCase
     public function testExecuteJoinOnIndex(): void
     {
 
-        $table = TableRegistry::getInstance()->createTable('testSelectJoinIndex', 5);
+        $table = TableRegistry::getInstance()->createTable('testSelectJoinIndex', 100);
         $table->addColumn(new Column('name', ColumnType::string, 255));
         $table->addColumn(new Column('price', ColumnType::float));
 
-        $table->addIndex(['name'], 5, 255);
+        $table->addIndex(['name'], 10, 255);
 
         $table->create();
 

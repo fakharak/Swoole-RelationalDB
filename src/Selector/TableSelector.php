@@ -374,10 +374,8 @@ class TableSelector
                     foreach ($populated as $item) {
 
                         $populatedWithJoin = new Resultset();
-
                         foreach ($join->get($item) as $itemJoined) {
                             $populatedWithJoin[] = $item->merge(new RecordCollection($itemJoined));
-
                         }
 
                     }

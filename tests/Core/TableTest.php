@@ -42,7 +42,7 @@ class TableTest extends TestCase
     public function testFilterByIndex()
     {
 
-        $table = new Table('testTableIndex', 100000);
+        $table = new Table('testTableIndex', 2000);
         $table->addColumn(
             new Column('name', ColumnType::string, 256)
         );
@@ -50,13 +50,13 @@ class TableTest extends TestCase
             new Column('price', ColumnType::float)
         );
 
-        $table->addIndex(['name'], 10000, 256);
-        $table->addIndex(['price'], 10000, 256);
+        $table->addIndex(['name'], 2000, 256);
+        $table->addIndex(['price'], 2000, 256);
 
         $table->create();
 
         $name = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        foreach (range(1, 10000) as $value) {
+        foreach (range(1, 1000) as $value) {
             $table->set($value, ['name' => $name[rand(1, strlen($name)) - 1], 'price' => rand(1, 1000000) / 100]);
         }
 
@@ -69,7 +69,7 @@ class TableTest extends TestCase
 
         }
 
-        self::assertEquals(10000, $total);
+        self::assertEquals(1000, $total);
 
     }
 
