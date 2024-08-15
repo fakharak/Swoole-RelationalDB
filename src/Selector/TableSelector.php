@@ -409,6 +409,14 @@ class TableSelector
 
             $record = $this->applyAliasesOnRecord($record);
 
+            foreach ($this->joins as $join) {
+                if (!$join instanceof LeftJoin) {
+                    if (!$record->offsetExists($join->getAlias())) {
+                        continue 2;
+                    }
+                }
+            }
+
             if ($this->where()->validateBracket($record)) {
 
                 if ($from === null || $rowNum >= $from) {

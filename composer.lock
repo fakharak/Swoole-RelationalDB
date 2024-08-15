@@ -8,11 +8,11 @@
     "packages": [
         {
             "name": "small/collection",
-            "version": "2.3.0",
+            "version": "2.5.0",
             "source": {
                 "type": "git",
                 "url": "https://git.small-project.dev/lib/small-collection",
-                "reference": "0a768d7824e708a3c9dd449c8e2ca17f2ccd92c0"
+                "reference": "038fb708347859d9109b03640c330ad5a733fec7"
             },
             "require": {
                 "ext-bcmath": "*",
@@ -44,7 +44,7 @@
                 "collection",
                 "selector"
             ],
-            "time": "2024-08-05T23:43:30+00:00"
+            "time": "2024-08-15T11:48:39+00:00"
         }
     ],
     "packages-dev": [

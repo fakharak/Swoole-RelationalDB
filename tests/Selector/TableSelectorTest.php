@@ -257,6 +257,80 @@ class TableSelectorTest extends TestCase
 
     }
 
+    public function testJoinWithJoinDrop()
+    {
+
+        $table = TableRegistry::getInstance()->createTable('testSelectJoinDrop', 5);
+        $table->addColumn(new Column('name', ColumnType::string, 255));
+        $table->addColumn(new Column('price', ColumnType::float));
+        $table->create();
+
+        $table->set(0, ['name' => 'john', 'price' => 12.5]);
+        $table->set(1, ['name' => 'paul', 'price' => 34.9]);
+        $table->set(2, ['name' => 'jack', 'price' => 12]);
+
+        $table2 = TableRegistry::getInstance()->createTable('testSelectJoinPostDrop', 5);
+        $table2->addColumn(new Column('message', ColumnType::string, 255));
+        $table2->addColumn(new Column('ownerId', ColumnType::string, 16));
+        $table2->addForeignKey('messageOwner', 'testSelectJoinDrop', 'ownerId');
+        $table2->create();
+
+
+        $table2->set(0, ['message' => 'ceci est un test', 'ownerId' => '0']);
+        $table2->set(1, ['message' => 'ceci est un autre test', 'ownerId' => '1']);
+        $table2->set(2, ['message' => 'ceci est une suite de test', 'ownerId' => '1']);
+
+        $result = (new TableSelector('testSelectJoinDrop', 'user'))
+            ->join('user', 'testSelectJoinPostDrops', 'message')
+            ->execute()
+        ;
+        self::assertCount(3, $result);
+        $this->assertTestSelectResultJoin(0, $result[0]['user']);
+        $this->assertTestSelectResultJoinPost(0, $result[0]['message']);
+        $this->assertTestSelectResultJoin(1, $result[1]['user']);
+        $this->assertTestSelectResultJoinPost(1, $result[1]['message']);
+        $this->assertTestSelectResultJoin(1, $result[2]['user']);
+        $this->assertTestSelectResultJoinPost(2, $result[2]['message']);
+
+    }
+
+    public function testJoinWithLeftJoin()
+    {
+
+        $table = TableRegistry::getInstance()->createTable('testSelectLeftJoin', 5);
+        $table->addColumn(new Column('name', ColumnType::string, 255));
+        $table->addColumn(new Column('price', ColumnType::float));
+        $table->create();
+
+        $table->set(0, ['name' => 'john', 'price' => 12.5]);
+        $table->set(1, ['name' => 'paul', 'price' => 34.9]);
+        $table->set(2, ['name' => 'jack', 'price' => 12]);
+
+        $table2 = TableRegistry::getInstance()->createTable('testSelectLeftJoinPost', 5);
+        $table2->addColumn(new Column('message', ColumnType::string, 255));
+        $table2->addColumn(new Column('ownerId', ColumnType::string, 16));
+        $table2->addForeignKey('messageOwner', 'testSelectLeftJoin', 'ownerId');
+        $table2->create();
+
+
+        $table2->set(0, ['message' => 'ceci est un test', 'ownerId' => '0']);
+        $table2->set(1, ['message' => 'ceci est un autre test', 'ownerId' => '1']);
+        $table2->set(2, ['message' => 'ceci est une suite de test', 'ownerId' => '1']);
+
+        $result = (new TableSelector('testSelectLeftJoin', 'user'))
+            ->join('user', 'testSelectLeftJoinPosts', 'message')
+            ->execute()
+        ;
+        self::assertCount(3, $result);
+        $this->assertTestSelectResultJoin(0, $result[0]['user']);
+        $this->assertTestSelectResultJoinPost(0, $result[0]['message']);
+        $this->assertTestSelectResultJoin(1, $result[1]['user']);
+        $this->assertTestSelectResultJoinPost(1, $result[1]['message']);
+        $this->assertTestSelectResultJoin(1, $result[2]['user']);
+        $this->assertTestSelectResultJoinPost(2, $result[2]['message']);
+
+    }
+
     private function assertTestSelectResultJoin(int $key, Record $result): void
     {
 
