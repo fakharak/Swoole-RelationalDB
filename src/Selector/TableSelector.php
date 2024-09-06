@@ -293,7 +293,21 @@ class TableSelector
 
     }
 
-    public function join(string $from, string $foreignKeyName, string $alias = null): self
+    public function innerJoin(string $from, string $foreignKeyName, string $alias = null): self
+    {
+
+        return $this->join($from, $foreignKeyName, $alias, InnerJoin::class);
+
+    }
+
+    public function leftJoint(string $from, string $foreignKeyName, string $alias = null): self
+    {
+
+        return $this->join($from, $foreignKeyName, $alias, LeftJoin::class);
+
+    }
+
+    public function join(string $from, string $foreignKeyName, string $alias = null, $joinClass = InnerJoin::class): self
     {
 
         if ($alias === null) {
@@ -314,7 +328,7 @@ class TableSelector
             $fromTable = $this->joins[$from]->getAlias();
         }
 
-        $this->joins[$from . '/' . $alias] = new Join($fromTable, $foreignKeyName, $alias);
+        $this->joins[$from . '/' . $alias] = new $joinClass($fromTable, $foreignKeyName, $alias);
 
         return $this;
 
