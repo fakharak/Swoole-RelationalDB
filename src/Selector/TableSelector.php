@@ -307,7 +307,7 @@ class TableSelector
 
     }
 
-    public function join(string $from, string $foreignKeyName, string $alias = null, $joinClass = InnerJoin::class): self
+    public function join(string $from, string $foreignKeyName, string $alias = null, string $joinClass = InnerJoin::class): self
     {
 
         if ($alias === null) {
@@ -328,7 +328,12 @@ class TableSelector
             $fromTable = $this->joins[$from]->getAlias();
         }
 
-        $this->joins[$from . '/' . $alias] = new $joinClass($fromTable, $foreignKeyName, $alias);
+        $join = new $joinClass($fromTable, $foreignKeyName, $alias);
+        if (!$join instanceof Join) {
+            throw new SyntaxErrorException('Invalid join class ' . $joinClass);
+        }
+
+        $this->joins[$from . '/' . $alias] = $join;
 
         return $this;
 
