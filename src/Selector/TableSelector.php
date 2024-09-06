@@ -300,7 +300,7 @@ class TableSelector
 
     }
 
-    public function leftJoint(string $from, string $foreignKeyName, string $alias = null): self
+    public function leftJoin(string $from, string $foreignKeyName, string $alias = null): self
     {
 
         return $this->join($from, $foreignKeyName, $alias, LeftJoin::class);
