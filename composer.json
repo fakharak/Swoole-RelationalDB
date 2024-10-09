@@ -5,8 +5,12 @@
   "type": "library",
   "authors": [
     {
-      "name": "Sébastien Kus",
-      "email": "seb@small-project.dev"
+      "name": "Fakhar Anwar",
+      "email": "fakhar.anwar@gmail.com"
+    },
+    {
+      "name": "Mohsin Ali",
+      "email": "mohsin.ali@devdksa.com"
     }
   ],
   "require": {
