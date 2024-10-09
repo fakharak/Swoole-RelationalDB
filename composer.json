@@ -1,5 +1,5 @@
 {
-  "name": "small/swoole-db",
+  "name": "sw-serv/relational-db",
   "license": "GPL-3.0-only",
   "description": "This package provide advanced features to manipulate openswoole tables",
   "type": "library",
