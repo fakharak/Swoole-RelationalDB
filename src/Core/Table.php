@@ -181,9 +181,10 @@ class Table implements \Iterator
 
     /**
      * @param (int|float|string|null)[] $rawRecord
+     * @param bool $abs
      * @return (int|float|string|null)[]
      */
-    protected function setMetasValues(array $rawRecord): array
+    protected function setMetasValues(array $rawRecord, bool $abs): array
     {
 
         $array = $rawRecord;
@@ -202,7 +203,9 @@ class Table implements \Iterator
                 }
 
                 $array[$column . '::sign'] = $value < 0 ? 1 : 0;
-                $value = abs($value);
+                if($abs) {
+                    $value = abs($value);
+                }
             }
 
             switch($this->getColumns()[$column]->getType()) {
@@ -280,13 +283,14 @@ class Table implements \Iterator
     /**
      * @param string|null $key
      * @param (string|int|float|null)[] $setValues
+     * @param bool $abs
      * @return string|null
      * @throws FieldValueIsNull
      * @throws NotFoundException
      * @throws SyntaxErrorException
      * @throws \Small\SwooleDb\Exception\TableNotExists
      */
-    public function set(string|null $key, array $setValues): string|null
+    public function set(string|null $key, array $setValues, bool $abs): string|null
     {
 
         if ($key === null) {
@@ -321,7 +325,7 @@ class Table implements \Iterator
 
         $this->addToForeignKeys($key, $setValues);
 
-        if ($this->openswooleTable->set($key, $this->setMetasValues($result))) {
+        if ($this->openswooleTable->set($key, $this->setMetasValues($result, $abs))) {
             return $key;
         } else {
             return null;
