@@ -745,5 +745,13 @@ class Table implements \Iterator
         return $this->openswooleTable->destroy();
 
     }
-
+    
+    /**
+     * This function returns the original Swoole Table instead of Wrapper Table
+     *
+     * @return mixed
+     */
+    public function getSwooleTable(): mixed {
+        return $this->openswooleTable;
+    }
 }
