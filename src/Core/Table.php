@@ -290,7 +290,7 @@ class Table implements \Iterator
      * @throws SyntaxErrorException
      * @throws \Small\SwooleDb\Exception\TableNotExists
      */
-    public function set(string|null $key, array $setValues, bool $abs): string|null
+    public function set(string|null $key, array $setValues, bool $abs = false): string|null
     {
 
         if ($key === null) {
